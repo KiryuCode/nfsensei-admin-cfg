@@ -1,8 +1,32 @@
 # nfSensei admin access (bb8)
 
-Lab notes for reaching and administering the **nfSensei** firewall from host **bb8** (Ubuntu). Covers the VLAN 20 path, factory SSH login, and the `neon@bb8` key installed on the box.
+Lab notes for reaching and administering the **nfSensei** firewall from host **bb8** (Ubuntu). Covers the VLAN 20 path, factory SSH login, the `neon@bb8` key, and a searchable CLI reference dumped from `help` on the box.
 
 Related host-side VLAN 10 work lives in [KiryuCode/nfsensei-vlans](https://github.com/KiryuCode/nfsensei-vlans).
+
+## Searchable CLI (web GUI)
+
+Open [`web/index.html`](web/index.html) in a browser, or serve it:
+
+```bash
+cd web
+python3 -m http.server 8080
+# then http://127.0.0.1:8080/
+```
+
+- Type `/` to focus search.
+- Queries like **add ip**, **vlan**, **dhcp**, **allow ssh**, **commit** hit how-to recipes first.
+- **Top 20** most useful commands sit above the full catalog (883 commands from nfSensei 0.51.173).
+- Every command has usage plus a lab-shaped example (`eth0.20` / `192.168.20.0/24`).
+
+Raw dumps: [`docs/cli-help.txt`](docs/cli-help.txt) (table) and [`docs/cli-help-detail.txt`](docs/cli-help-detail.txt) (`help <command>` for each).
+
+Refresh from the firewall:
+
+```bash
+ssh root@192.168.20.1 '/usr/local/bin/nfsensei-cli -c help'
+ssh root@192.168.20.1 '/usr/local/bin/nfsensei-cli -c "help ip address"'
+```
 
 ## Working config
 

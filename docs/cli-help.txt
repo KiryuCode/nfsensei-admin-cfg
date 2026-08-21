@@ -1,0 +1,1012 @@
+nfSensei CLI paradigms
+----------------------
+This is NOT VyOS, NOT Cisco IOS. Two dispatch styles coexist:
+
+  FLAT commands (typed at the root prompt, take all args inline):
+    firewall rule add  |  nat rule add  |  dhcp pool add  |  dns server add
+    show <topic>       |  save  commit  discard  rollback  diff
+
+  MODAL contexts (enter, configure, exit):
+    interface eth0           -> ip address 192.168.1.1/24 ; mtu 1500 ; exit
+    pppoe interface add wan0 -> pppoe interface wan0 ; username "x" ; exit
+    routing bgp              -> neighbor 10.0.0.1 remote-as 65001 ; exit
+
+Every change is staged in the CANDIDATE config — `commit` to apply,
+`discard` to drop pending changes, `rollback` to revert a committed change.
+
+Inside a modal context type `help` (or `<topic> help` at the root) for the
+scope-specific command list.
+
+NAME                                   CATEGORY                 DESCRIPTION
+-------------------------------------  -----------------------  ----------------------------------------
+ab-test start                          Custom("dataplane")      Start an A/B dataplane test splitting traffic between backends
+ab-test stop                           Custom("dataplane")      Stop an A/B dataplane test
+ai model disable                       Custom("ai")             Persistently disable the AI assistant (survives reboot/update, unlike 'ai model stop')
+ai model download                      Custom("ai")             Download the Satori AI model from updates.nfsensei.org
+ai model enable                        Custom("ai")             Persistently enable the AI assistant (survives reboot/update, unlike 'ai model start')
+ai model start                         Custom("ai")             Start the AI inference service (llama-server)
+ai model status                        Custom("ai")             Show AI model and service status
+ai model stop                          Custom("ai")             Stop the AI inference service (llama-server)
+ai model uninstall                     Custom("ai")             Remove the AI model file (~4.7GB) and disable the assistant. Requires --confirm.
+alias                                  Core                     Alias a command (with optional flags) to a new name.
+all                                    Filters                  Check if all rows match a condition
+anchor add                             Custom("anchor")         Create a new anchor
+anchor remove                          Custom("anchor")         Remove an anchor by name
+anchor rule add                        Custom("anchor")         Add a firewall rule ID to an anchor
+anchor rule remove                     Custom("anchor")         Remove a firewall rule ID from an anchor
+anchor set                             Custom("anchor")         Modify anchor settings
+any                                    Filters                  Check if any row matches a condition
+anycast remove                         Custom("anycast")        Remove a BGP anycast prefix from candidate config
+anycast setup                          Custom("anycast")        Add or update a BGP anycast prefix in candidate config (Anycast Setup Wizard)
+app-id                                 Custom("system")         Enter application identification configuration mode
+app-id disable                         Custom("app-id")         Disable App-ID identification
+app-id enable                          Custom("app-id")         Enable App-ID identification
+app-id qos add                         Custom("app-id")         Add an App-ID QoS rule
+app-id qos remove                      Custom("app-id")         Remove an App-ID QoS rule
+app-id ratelimit add                   Custom("app-id")         Add an App-ID rate limit rule
+app-id ratelimit remove                Custom("app-id")         Remove an App-ID rate limit rule
+app-id set                             Custom("app-id")         Set App-ID parameters
+app-id signature add                   Custom("app-id")         Add a custom App-ID signature
+app-id signature remove                Custom("app-id")         Remove a custom App-ID signature
+append                                 Filters                  Append a value to the end of a list
+auth enable-password set               Custom("auth")           Set the enable password hash for privileged mode
+auth set                               Custom("auth")           Set authentication parameters
+backup auto disable                    Custom("backup")         Disable automatic backups
+backup auto enable                     Custom("backup")         Enable automatic backups
+backup destination add                 Custom("backup")         Add a remote backup destination
+backup destination remove              Custom("backup")         Remove a remote backup destination
+backup set                             Custom("backup")         Set backup parameters
+bfd peer add                           Custom("routing")        Add a BFD peer
+bfd peer remove                        Custom("routing")        Remove a BFD peer
+bfd set                                Custom("routing")        Set BFD parameters
+bgp                                    Custom("routing")        Enter BGP routing configuration mode
+bgp neighbor add                       Custom("bgp")            Add a BGP neighbor to candidate config
+bgp neighbor remove                    Custom("bgp")            Remove a BGP neighbor from candidate config
+bgp network add                        Custom("bgp")            Add a network to BGP advertisements
+bgp network remove                     Custom("bgp")            Remove a network from BGP advertisements
+bond add                               Custom("bond")           Add a bond interface to candidate config
+bond remove                            Custom("bond")           Remove a bond interface from candidate config
+break                                  Core                     Break a loop.
+bridge-domain add                      Custom("bridge")         Add a bridge domain to candidate config
+bridge-domain member add               Custom("bridge")         Add a member interface to a bridge domain with optional 802.1Q VLAN config
+bridge-domain member remove            Custom("bridge")         Remove a member interface from a bridge domain
+bridge-domain member vlan              Custom("bridge")         Mutate 802.1Q VLAN configuration on an existing bridge domain member
+bridge-domain remove                   Custom("bridge")         Remove a bridge domain from candidate config
+capture delete                         Custom("diagnostics")    Delete a completed capture session and its PCAP file
+capture list                           Custom("diagnostics")    List all packet capture sessions (active and completed)
+capture presets                        Custom("diagnostics")    List available capture filter presets
+capture start                          Custom("diagnostics")    Start a packet capture on an interface
+capture status                         Custom("diagnostics")    Show details for one capture session
+capture stop                           Custom("diagnostics")    Stop a running packet capture
+capture watch                          Custom("diagnostics")    Stream decoded packets from a running (or just-stopped) capture live; Ctrl-C stops watching without stopping the capture
+cellular airplane-mode                 Custom("cellular")       Toggle cellular airplane mode (disable all radios)
+cellular connect                       Custom("cellular")       Connect a cellular modem
+cellular data-policy                   Custom("cellular")       Set data usage policy for a cellular modem
+cellular disconnect                    Custom("cellular")       Disconnect a cellular modem
+cellular modem add                     Custom("cellular")       Add a cellular modem to candidate config
+cellular modem delete                  Custom("cellular")       Remove a cellular modem from candidate config
+cellular modem set                     Custom("cellular")       Modify a cellular modem setting in candidate config
+cellular reset-data-usage              Custom("cellular")       Reset data usage counters for a cellular modem
+cellular scan                          Custom("cellular")       Scan for available cellular networks
+cellular send-sms                      Custom("cellular")       Send an SMS message via a cellular modem
+cellular sms management                Custom("cellular")       Configure SMS management (inbound command processing)
+cellular sms recipients add            Custom("cellular")       Add an SMS alert recipient
+cellular sms recipients delete         Custom("cellular")       Remove an SMS alert recipient
+certificate acme set                   Custom("certificate")    Configure ACME (Let's Encrypt) settings
+certificate add                        Custom("certificate")    Add a certificate reference
+certificate ca add                     Custom("certificate")    Add a CA certificate reference
+certificate ca remove                  Custom("certificate")    Remove a CA certificate
+certificate remove                     Custom("certificate")    Remove a certificate
+clear connections                      Custom("firewall")       Flush all active connections across all backends
+cloud enroll                           Custom("cloud")          Enroll this device with the cloud management platform
+cloud set                              Custom("cloud")          Set a cloud management agent configuration value
+cloud telemetry                        Custom("cloud")          Enable or disable a specific telemetry metric
+cloud test                             Custom("cloud")          Test connectivity to the cloud management platform
+cloud unenroll                         Custom("cloud")          Remove cloud enrollment and delete device certificates
+collect                                Filters                  Collect a stream into a value.
+columns                                Filters                  List column names from table or record
+commit                                 Custom("config")         Commit candidate config to running
+community-list add                     Custom("routing")        Add a community-list entry to candidate config
+community-list remove                  Custom("routing")        Remove a community-list or a specific entry from candidate config
+compact                                Filters                  Remove null/nothing values from list
+config load                            Custom("config")         Import a YAML configuration file into the candidate config
+config save                            Custom("config")         Export configuration to a YAML file
+config vpn netbird add                 Custom("vpn")            Add a NetBird mesh VPN client instance
+config vpn netbird delete              Custom("vpn")            Remove a NetBird mesh VPN client instance from candidate config
+config vpn netbird set                 Custom("vpn")            Modify an existing NetBird mesh VPN client
+config vpn tailscale add               Custom("vpn")            Add a Tailscale mesh VPN client instance
+config vpn tailscale delete            Custom("vpn")            Remove a Tailscale mesh VPN client instance from candidate config
+config vpn tailscale set               Custom("vpn")            Modify an existing Tailscale mesh VPN client
+configure                              Custom("config")         Enter configuration mode (use 'configure terminal')
+configure terminal                     Custom("config")         Enter global configuration mode
+confirm                                Custom("config")         Confirm a pending commit (prevents auto-rollback)
+const                                  Core                     Create a parse-time constant.
+continue                               Core                     Continue a loop from the next iteration.
+crashloop disable                      Custom("crashloop")      Disable crash-loop detection
+crashloop enable                       Custom("crashloop")      Enable crash-loop detection and auto-fallback
+crashloop set                          Custom("crashloop")      Set crash-loop detection parameters
+custom-kernel-cmdline                  Custom("system")         Set (or clear, with no arguments) persistent custom kernel boot command-line parameters
+dataplane doctor                       Custom("dataplane")      Run comprehensive dataplane diagnostics with per-category scoring
+dataplane mode                         Custom("dataplane")      Change interface dataplane backend directly in config (no running dataplane required)
+dataplane switch                       Custom("dataplane")      Switch an interface to a different dataplane backend (zero-drop)
+def                                    Core                     Define a custom command.
+default                                Filters                  Fill missing or null column values with a default
+default-qdisc                          Custom("system")         Set the box-wide default queue discipline (bufferbloat control)
+describe                               Filters                  Describe the type and shape of a value
+description                            Custom("interface")      Set description on the current interface
+dhcp                                   Custom("service")        Enter DHCP server configuration mode
+dhcp lease add                         Custom("dhcp")           Add a static DHCP lease to candidate config
+dhcp lease remove                      Custom("dhcp")           Remove a static DHCP lease from candidate config
+dhcp pool add                          Custom("dhcp")           Add a DHCP pool to candidate config
+dhcp pool remove                       Custom("dhcp")           Remove a DHCP pool from candidate config
+dhcpv6 name-server add                 Custom("dhcpv6")         Add a name server to a DHCPv6 subnet
+dhcpv6 network add                     Custom("dhcpv6")         Add a DHCPv6 shared network to candidate config
+dhcpv6 network remove                  Custom("dhcpv6")         Remove a DHCPv6 shared network from candidate config
+dhcpv6 pd-pool add                     Custom("dhcpv6")         Add a prefix delegation pool to a DHCPv6 subnet
+dhcpv6 range add                       Custom("dhcpv6")         Add an address range to a DHCPv6 subnet
+dhcpv6 subnet add                      Custom("dhcpv6")         Add a subnet to a DHCPv6 shared network
+diff                                   Custom("config")         Show diff between candidate and running config
+dig                                    Custom("diagnostics")    DNS lookup (advanced)
+disable                                Custom("config")         Return to user mode
+discard                                Custom("config")         Discard candidate config changes
+dns                                    Custom("service")        Enter DNS server configuration mode
+dns zone add                           Custom("dns")            Add a DNS zone to candidate config
+dns zone remove                        Custom("dns")            Remove a DNS zone from candidate config
+dns-filter disable                     Custom("dns-filter")     Disable DNS filtering
+dns-filter enable                      Custom("dns-filter")     Enable DNS filtering
+dns-filter rule add                    Custom("dns-filter")     Add a DNS filter rule
+dns-filter rule remove                 Custom("dns-filter")     Remove a DNS filter rule
+dns-filter set                         Custom("dns-filter")     Set DNS filter parameters
+do                                     Core                     Run a closure, providing it with the pipeline input.
+dot1x disable                          Custom("dot1x")          Disable 802.1X port authentication globally
+dot1x enable                           Custom("dot1x")          Enable 802.1X port authentication globally
+dot1x interface add                    Custom("dot1x")          Add 802.1X configuration to an interface
+dot1x interface remove                 Custom("dot1x")          Remove 802.1X configuration from an interface
+dpdk disable                           Custom("dpdk")           Disable DPDK global tuning
+dpdk enable                            Custom("dpdk")           Enable DPDK global tuning
+dpdk set                               Custom("dpdk")           Set DPDK global parameters
+dpdk whitelist add                     Custom("dpdk")           Add a PCI device to DPDK whitelist
+dpdk whitelist remove                  Custom("dpdk")           Remove a PCI device from DPDK whitelist
+drop                                   Filters                  Drop the first N items from a list
+each                                   Filters                  Apply a transformation to each row's column value
+echo                                   Core                     Returns its arguments, ignoring the piped-in value.
+eigrp network add                      Custom("routing")        Add a network to EIGRP
+eigrp network remove                   Custom("routing")        Remove a network from EIGRP
+eigrp set                              Custom("routing")        Set EIGRP parameters
+enable                                 Custom("config")         Enter privileged mode
+end                                    Custom("config")         Return to privileged mode from any configuration mode
+enumerate                              Filters                  Add an index column to each row
+error                                  Core                     Various commands for working with errors.
+error make                             Core                     Create an error.
+exit                                   Custom("config")         Exit the current configuration context, returning to the parent mode
+export alias                           Core                     Alias a command (with optional flags) to a new name and export it from a module.
+export const                           Core                     Use parse-time constant from a module and export them from this module.
+export def                             Core                     Define a custom command and export it from a module.
+export extern                          Core                     Define an extern and export it from a module.
+export module                          Core                     Export a custom module from a module.
+export use                             Core                     Use definitions from a module and export them from this module.
+extern                                 Core                     Define a signature for an external command.
+fabric conduit set-standby             Custom("fabric")         Set a fabric conduit's warm-standby hub address list (candidate config; run 'commit' to apply)
+fabric conduit set-tier                Custom("fabric")         Set a fabric conduit's hub tier for warm-standby multi-hub failover (candidate config; run 'commit' to apply)
+fabric conduit show-ha                 Custom("fabric")         Show a fabric conduit's Musubi bonding-group HA state (edge-local view, mirrors GET /api/v1/fabric/conduits/:name/ha)
+fabric hub delegation add              Custom("fabric")         Create a prefix delegation for an edge on the hub (POST /api/v1/delegations; hub drains + restarts to apply)
+fabric hub delegation list             Custom("fabric")         List prefix delegations configured on the hub (GET /api/v1/delegations)
+fabric hub delegation rm               Custom("fabric")         Remove a prefix delegation from the hub (DELETE /api/v1/delegations/:id; hub drains + restarts to apply)
+fabric hub pool add                    Custom("fabric")         Create a prefix pool on the hub (POST /api/v1/pools; hub drains + restarts to apply)
+fabric hub pool list                   Custom("fabric")         List prefix pools configured on the hub (GET /api/v1/pools)
+fabric hub pool rm                     Custom("fabric")         Remove a prefix pool from the hub (DELETE /api/v1/pools/:id; fails if a delegation still references it; hub drains + restarts to apply)
+factory-reset                          Custom("system")         Reset system to factory defaults. Requires --confirm flag. Use --full to wipe all user data.
+find                                   Filters                  Filter rows containing search text
+firewall                               Custom("firewall")       Enter firewall configuration mode
+firewall rule add                      Custom("firewall")       Add a firewall rule to candidate config
+firewall rule modify                   Custom("firewall")       Modify fields of an existing firewall rule
+firewall rule move                     Custom("firewall")       Reorder a firewall rule within the candidate config
+firewall rule remove                   Custom("firewall")       Remove a firewall rule from candidate config
+first                                  Filters                  Return first N rows from table
+flatten                                Filters                  Flatten nested lists one level
+flow start                             Custom("firewall")       Start capturing flows on an interface
+flow stop                              Custom("firewall")       Stop the active flow capture session
+for                                    Core                     Loop over a range.
+from                                   Formats                  Parse data from a format (json, yaml)
+from json                              Formats                  Parse JSON string into structured data
+from yaml                              Formats                  Parse YAML string into structured data
+gateway add                            Custom("gateway")        Add a gateway group to candidate config
+gateway remove                         Custom("gateway")        Remove a gateway group from candidate config
+geneve add                             Custom("geneve")         Add a GENEVE tunnel to candidate config
+geneve remove                          Custom("geneve")         Remove a GENEVE tunnel from candidate config
+get                                    Filters                  Extract a column from table or field from record
+global set                             Custom("global")         Set global connection tracking parameters
+gre add                                Custom("gre")            Add a GRE tunnel to candidate config
+gre remove                             Custom("gre")            Remove a GRE tunnel from candidate config
+group-by                               Filters                  Group table rows by a column value
+ha                                     Custom("system")         Enter high-availability configuration mode
+ha disable                             Custom("ha")             Disable high availability
+ha enable                              Custom("ha")             Enable high availability
+ha health-check add                    Custom("ha")             Add a health check
+ha health-check remove                 Custom("ha")             Remove a health check
+ha set                                 Custom("ha")             Set HA parameters
+headscale acl diff                     Custom("headscale")      Show diff between nfSensei firewall rules and current Headscale ACLs
+headscale acl get                      Custom("headscale")      Print the current Headscale ACL policy as JSON
+headscale acl set                      Custom("headscale")      Replace the Headscale ACL policy from a JSON string
+headscale acl sync                     Custom("headscale")      Sync nfSensei firewall rules to Headscale ACLs
+headscale config set                   Custom("headscale")      Set a Headscale configuration key (writes to candidate config)
+headscale config show                  Custom("headscale")      Show current Headscale configuration
+headscale key create                   Custom("headscale")      Create a pre-auth key for a user
+headscale key expire                   Custom("headscale")      Expire (invalidate) a pre-auth key
+headscale key list                     Custom("headscale")      List pre-auth keys (optionally filtered by user)
+headscale machine delete               Custom("headscale")      Delete a machine
+headscale machine expire               Custom("headscale")      Expire a machine (forces re-auth)
+headscale machine get                  Custom("headscale")      Get details of a specific machine registered with Headscale
+headscale machine list                 Custom("headscale")      List machines registered with Headscale
+headscale machine register             Custom("headscale")      Register a node from an interactive tailscale login (paste its mkey)
+headscale machine rename               Custom("headscale")      Rename a machine (sets the given name MagicDNS hostnames derive from)
+headscale machine tags set             Custom("headscale")      Set ACL tags on a machine
+headscale route disable                Custom("headscale")      Withdraw approval for a route on a node
+headscale route enable                 Custom("headscale")      Approve a route (subnet or exit node) on a node
+headscale route list                   Custom("headscale")      List advertised routes
+headscale stack delete                 Custom("headscale")      Remove a Headscale user to stack mapping
+headscale stack list                   Custom("headscale")      List Headscale user to nfSensei stack (VRF) mappings
+headscale stack set                    Custom("headscale")      Map a Headscale user to an nfSensei stack (VRF)
+headscale start                        Custom("headscale")      Start the managed Headscale daemon
+headscale status                       Custom("headscale")      Show Headscale daemon status and summary counts
+headscale stop                         Custom("headscale")      Stop the managed Headscale daemon
+headscale user create                  Custom("headscale")      Create a Headscale user (namespace)
+headscale user delete                  Custom("headscale")      Delete a Headscale user (namespace)
+headscale user list                    Custom("headscale")      List Headscale users (namespaces)
+help                                   Core                     Show help for commands
+hide                                   Core                     Hide definitions in the current scope.
+hide-env                               Core                     Hide environment variables in the current scope.
+hostname                               Custom("system")         Set the system hostname
+http-test                              Custom("diagnostics")    Test an HTTP endpoint with timing breakdown
+hub cluster disable                    Custom("hub")            Disable hub active-standby clustering (PUT /api/v1/cluster; hub drains + restarts to apply)
+hub cluster enable                     Custom("hub")            Enable hub active-standby clustering (PUT /api/v1/cluster; hub drains + restarts to apply)
+hub failover                           Custom("hub")            Show the hub's active-standby failover/cluster view (GET /api/v1/failover)
+hub publish add                        Custom("hub")            Create or replace a publish (inbound-service) rule on the hub (POST /api/v1/publish; fails if the tenant does not exist; hub drains + restarts to apply)
+hub publish list                       Custom("hub")            List resolved inbound-service publish rules on the hub (GET /api/v1/publish)
+hub publish pool-member add            Custom("hub")            Add or replace one pool member on a hub publish rule (fetch, mutate, repost -- see this file's own K+1 Stage 3b module doc; hub drains + restarts to apply)
+hub publish pool-member rm             Custom("hub")            Remove one pool member from a hub publish rule (fetch, mutate, repost -- see this file's own K+1 Stage 3b module doc; hub drains + restarts to apply)
+hub publish rate-limit add             Custom("hub")            Add or replace one rate-limit rule on a hub publish rule (fetches the rule's full current state, mutates its rate_limits array, and reposts the whole rule to POST /api/v1/publish -- see this file's own K+1 Stage 3b module doc for why a full repost is required; hub drains + restarts to apply)
+hub publish rate-limit rm              Custom("hub")            Remove one rate-limit rule from a hub publish rule (fetch, mutate, repost -- see this file's own K+1 Stage 3b module doc; hub drains + restarts to apply)
+hub publish rm                         Custom("hub")            Remove a publish rule from a tenant on the hub (DELETE /api/v1/publish/:tenant/:name; hub drains + restarts to apply)
+hub status                             Custom("hub")            Show hub status: uptime, fingerprint, listen port, and connected edges (GET /api/v1/status)
+hub tenant add                         Custom("hub")            Create a new tenant on the hub (POST /api/v1/tenants; fails if it already exists; hub drains + restarts to apply)
+hub tenant list                        Custom("hub")            List tenants configured on the hub (GET /api/v1/tenants)
+hub tenant rm                          Custom("hub")            Remove a tenant and its publish rules from the hub (DELETE /api/v1/tenants/:name; hub drains + restarts to apply)
+identity disable                       Custom("identity")       Disable identity services
+identity enable                        Custom("identity")       Enable identity services
+identity ldap set                      Custom("identity")       Configure LDAP identity settings
+identity radius set                    Custom("identity")       Configure RADIUS identity settings
+if                                     Core                     Conditionally run a block.
+ignore                                 Core                     Ignore the output of the previous command in the pipeline.
+import opnsense                        Custom("import")         Import an OPNsense config.xml backup into nfSensei configuration
+import pfsense                         Custom("import")         Import a pfSense config.xml backup into nfSensei configuration
+insert                                 Filters                  Insert a new column into each row
+interface                              Custom("interface")      Enter interface configuration mode
+interface capability add               Custom("interface")      Add a capability to the current interface
+interface capability remove            Custom("interface")      Remove a capability from the current interface
+interface dataplane                    Custom("interface")      Set the dataplane backend for the current interface
+interface delete                       Custom("interface")      Delete a virtual interface from candidate config (refuses physical interfaces)
+interface dummy add                    Custom("interface")      Add a dummy interface to candidate config
+interface identify                     Custom("interface")      Blink the LED on a physical interface for identification
+interface identify-wizard              Custom("interface")      Interactive wizard to identify physical interfaces and assign roles
+interface ipv6 track-interface         Custom("interface")      Set IPv6 mode to track-interface: derive this LAN's prefix from a specific WAN's DHCPv6-PD delegation
+interface loopback add                 Custom("interface")      Add a loopback interface to candidate config
+interface mac-override                 Custom("interface")      Override the MAC address on the current interface (e.g., for ISP MAC cloning)
+interface mirror-rules disable         Custom("interface")      Disable mirroring firewall rules to Linux backend on the current interface
+interface mirror-rules enable          Custom("interface")      Enable mirroring firewall rules to Linux backend on the current interface
+interface pppoe-delegated-from         Custom("interface")      Track a PPPoE session's delegated IPv6 prefix on the current interface (announce via radvd)
+interface reassign                     Custom("interface")      Reassign a configured interface to a different NIC name
+interface rename                       Custom("interface")      Rename an interface's internal name (refused if still referenced elsewhere, or if the name is taken)
+interface role                         Custom("interface")      Set the security zone/role for the current interface
+interface set ipv6-track-interface     Custom("interface")      Flat setter: track a WAN's delegated IPv6 prefix on the named interface
+interface set pppoe-delegated-from     Custom("interface")      Flat setter: track a PPPoE session's delegated prefix on the named interface
+interface stack                        Custom("interface")      Assign the current interface to a stack/VRF
+interface veth add                     Custom("interface")      Add a veth pair to candidate config
+interface vlan                         Custom("interface")      Set VLAN configuration on the current interface
+into                                   Conversions              Type conversions (int, string, bool, float)
+into bool                              Conversions              Convert value to boolean
+into float                             Conversions              Convert value to float
+into int                               Conversions              Convert value to integer
+into string                            Conversions              Convert value to string
+ip address                             Custom("interface")      Set IP address on the current interface
+ips                                    Custom("system")         Enter IPS (Intrusion Prevention System) configuration mode
+ips category add                       Custom("ips")            Add or configure an IPS category
+ips category remove                    Custom("ips")            Remove an IPS category configuration
+ips disable                            Custom("ips")            Disable Intrusion Prevention System
+ips enable                             Custom("ips")            Enable Intrusion Prevention System
+ips exception add                      Custom("ips")            Add an IPS exception (whitelist)
+ips exception remove                   Custom("ips")            Remove an IPS exception
+ips policy add                         Custom("ips")            Add an IPS policy
+ips policy remove                      Custom("ips")            Remove an IPS policy
+ips profile add                        Custom("ips")            Add a Suricata IPS profile for per-rule deep packet inspection
+ips profile remove                     Custom("ips")            Remove a Suricata IPS profile
+ips set                                Custom("ips")            Set IPS parameters
+ips signature add                      Custom("ips")            Add an IPS signature
+ips signature remove                   Custom("ips")            Remove an IPS signature
+ipsec tunnel add                       Custom("ipsec")          Add an IPsec tunnel to candidate config
+ipsec tunnel remove                    Custom("ipsec")          Remove an IPsec tunnel from candidate config
+isis interface add                     Custom("routing")        Add an interface to IS-IS
+isis interface remove                  Custom("routing")        Remove an interface from IS-IS
+isis set                               Custom("routing")        Set IS-IS parameters
+last                                   Filters                  Return last N rows from table
+ldp interface add                      Custom("routing")        Add an interface to LDP
+ldp interface remove                   Custom("routing")        Remove an interface from LDP
+ldp set                                Custom("routing")        Set LDP parameters
+length                                 Filters                  Count rows in table or characters in string
+let                                    Core                     Create a variable and give it a value.
+lldp disable                           Custom("lldp")           Disable LLDP globally
+lldp enable                            Custom("lldp")           Enable LLDP globally with optional parameters
+load-balancer disable                  Custom("load-balancer")  Disable the load balancer
+load-balancer enable                   Custom("load-balancer")  Enable the load balancer
+load-balancer health-check add         Custom("load-balancer")  Add a health check definition
+load-balancer health-check remove      Custom("load-balancer")  Remove a health check definition
+load-balancer pool add                 Custom("load-balancer")  Add a server pool
+load-balancer pool member add          Custom("load-balancer")  Add a member to a server pool
+load-balancer pool member drain        Custom("load-balancer")  Set a pool member to drain state (no new connections)
+load-balancer pool member remove       Custom("load-balancer")  Remove a member from a server pool
+load-balancer pool remove              Custom("load-balancer")  Remove a server pool
+load-balancer virtual-server add       Custom("load-balancer")  Add a virtual server
+load-balancer virtual-server remove    Custom("load-balancer")  Remove a virtual server
+logging disable                        Custom("logging")        Disable logging
+logging enable                         Custom("logging")        Enable logging
+logging server add                     Custom("logging")        Add a remote syslog server
+logging server remove                  Custom("logging")        Remove a remote syslog server
+logging set                            Custom("logging")        Set logging parameters
+loop                                   Core                     Run a block in a loop.
+match                                  Core                     Conditionally run a block on a matched value.
+math                                   Math                     Mathematical operations (sum, avg, min, max)
+math avg                               Math                     Calculate the average of a list of numbers
+math max                               Math                     Find the maximum value in a list
+math min                               Math                     Find the minimum value in a list
+math sum                               Math                     Sum a list of numbers
+merge                                  Filters                  Merge a record into each row (adds/overwrites columns)
+mesh policy adopt                      Custom("mesh-policy")    Clear adoption gate and reconcile a mesh policy target
+mesh policy sync                       Custom("mesh-policy")    Trigger a mesh policy reconciliation pass (all targets, or --target X)
+mlag disable                           Custom("mlag")           Disable MLAG
+mlag enable                            Custom("mlag")           Enable MLAG with peer configuration
+mlag interface add                     Custom("mlag")           Bind an interface to an MLAG ID
+mlag interface remove                  Custom("mlag")           Remove an MLAG interface binding
+module                                 Core                     Define a custom module.
+monitor                                Custom("system")         Launch the nfsensei-monitor TUI operational cockpit
+mpls add                               Custom("mpls")           Add an MPLS LSP tunnel to candidate config
+mpls remove                            Custom("mpls")           Remove an MPLS LSP tunnel from candidate config
+mut                                    Core                     Create a mutable variable and give it a value.
+nat                                    Custom("nat")            Enter NAT configuration mode
+nat outbound add                       Custom("nat")            Add an outbound NAT (SNAT/masquerade) rule
+nat outbound remove                    Custom("nat")            Remove an outbound NAT rule
+netbird account show                   Custom("netbird")        Show account details and settings
+netbird account update                 Custom("netbird")        Update account settings
+netbird activity                       Custom("netbird")        Show NetBird management server activity log
+netbird client down                    Custom("netbird")        Disconnect from the NetBird network
+netbird client status                  Custom("netbird")        Show NetBird client connection status
+netbird client up                      Custom("netbird")        Connect to a NetBird network
+netbird config set                     Custom("netbird")        Set a NetBird client configuration parameter
+netbird config show                    Custom("netbird")        Show the current NetBird client and server configuration
+netbird dns create                     Custom("netbird")        Create a new nameserver group
+netbird dns delete                     Custom("netbird")        Delete a nameserver group
+netbird dns get                        Custom("netbird")        Get details of a specific nameserver group
+netbird dns list                       Custom("netbird")        List all NetBird DNS nameserver groups
+netbird dns settings                   Custom("netbird")        Show account-level DNS settings
+netbird dns settings update            Custom("netbird")        Update account-level DNS settings
+netbird dns update                     Custom("netbird")        Update a nameserver group
+netbird group create                   Custom("netbird")        Create a new NetBird peer group
+netbird group delete                   Custom("netbird")        Delete a NetBird peer group
+netbird group get                      Custom("netbird")        Get details of a specific group
+netbird group list                     Custom("netbird")        List all NetBird peer groups
+netbird group update                   Custom("netbird")        Update a group's name or peer membership
+netbird interface show                 Custom("netbird")        Show NetBird tunnel interface details (wt0 or custom name)
+netbird key create                     Custom("netbird")        Create a new NetBird pre-authentication setup key
+netbird key delete                     Custom("netbird")        Permanently delete a NetBird setup key (use 'revoke' to preserve audit trail)
+netbird key get                        Custom("netbird")        Get details of a specific setup key
+netbird key list                       Custom("netbird")        List all NetBird pre-authentication setup keys
+netbird key revoke                     Custom("netbird")        Revoke a NetBird setup key
+netbird key update                     Custom("netbird")        Update a setup key's name, revocation state, or usage limit
+netbird network create                 Custom("netbird")        Create a new overlay network
+netbird network delete                 Custom("netbird")        Delete an overlay network
+netbird network get                    Custom("netbird")        Get details of a specific overlay network
+netbird network list                   Custom("netbird")        List all overlay networks
+netbird network resource create        Custom("netbird")        Add a resource to a network
+netbird network resource delete        Custom("netbird")        Remove a resource from a network
+netbird network resource get           Custom("netbird")        Get details of a specific network resource
+netbird network resource list          Custom("netbird")        List resources in a network
+netbird network resource update        Custom("netbird")        Update a network resource
+netbird network router create          Custom("netbird")        Add a router peer to a network
+netbird network router delete          Custom("netbird")        Remove a router from a network
+netbird network router get             Custom("netbird")        Get details of a specific router
+netbird network router list            Custom("netbird")        List routers in a network
+netbird network router update          Custom("netbird")        Update a router's metric, masquerade, or enabled state
+netbird network update                 Custom("netbird")        Update a network's name or description
+netbird peer accessible                Custom("netbird")        List peers accessible from a given peer
+netbird peer approve                   Custom("netbird")        Approve a peer pending administrator approval
+netbird peer delete                    Custom("netbird")        Remove a peer from the NetBird network
+netbird peer get                       Custom("netbird")        Get details of a specific peer
+netbird peer list                      Custom("netbird")        List all peers registered in the NetBird network
+netbird peer update                    Custom("netbird")        Update a peer's name, SSH access, or local flags
+netbird policy create                  Custom("netbird")        Create a new NetBird access policy
+netbird policy delete                  Custom("netbird")        Delete a NetBird access policy
+netbird policy get                     Custom("netbird")        Get details of a specific policy
+netbird policy list                    Custom("netbird")        List all NetBird access policies
+netbird policy update                  Custom("netbird")        Update an existing NetBird access policy
+netbird posture create                 Custom("netbird")        Create a new NetBird posture check policy (provide JSON body)
+netbird posture delete                 Custom("netbird")        Delete a NetBird posture check policy
+netbird posture get                    Custom("netbird")        Get a specific NetBird posture check policy by ID
+netbird posture list                   Custom("netbird")        List NetBird posture check policies
+netbird posture update                 Custom("netbird")        Update a NetBird posture check policy (provide ID and JSON body)
+netbird server start                   Custom("netbird")        Start all NetBird server components (relay, signal, management)
+netbird server status                  Custom("netbird")        Show NetBird server component status (management, signal, relay)
+netbird server stop                    Custom("netbird")        Stop all NetBird server components
+netbird token create                   Custom("netbird")        Create a new API token for a user
+netbird token delete                   Custom("netbird")        Delete an API token
+netbird token get                      Custom("netbird")        Get details of a specific API token
+netbird token list                     Custom("netbird")        List API tokens for a user
+netbird user block                     Custom("netbird")        Block a user from the NetBird account
+netbird user delete                    Custom("netbird")        Permanently delete a user
+netbird user get                       Custom("netbird")        Get details of a specific user
+netbird user invite                    Custom("netbird")        Invite a user to the NetBird account by email
+netbird user list                      Custom("netbird")        List all users in the NetBird account
+netbird user unblock                   Custom("netbird")        Unblock a user and restore their NetBird account access
+netbird user update                    Custom("netbird")        Update a user's role
+netbird vlan bind                      Custom("netbird")        Bind the NetBird tunnel interface to a VLAN (creates wt0.<id> sub-interface)
+nfpack action                          Custom("nfpack")         Trigger a package action (e.g., refresh feeds, download data)
+nfpack backup                          Custom("nfpack")         Create a backup archive of an nfpack package
+nfpack console                         Custom("nfpack")         Open an interactive Lua console for a package
+nfpack create                          Custom("nfpack")         Create a new nfpack package scaffold
+nfpack disable                         Custom("nfpack")         Disable an nfpack package (remove without uninstalling)
+nfpack enable                          Custom("nfpack")         Enable an nfpack package (install and activate)
+nfpack generate                        Custom("nfpack")         Generate an nfpack package from a natural-language description (requires Satori AI)
+nfpack health                          Custom("nfpack")         Run the health check for an nfpack package
+nfpack info                            Custom("nfpack")         Show detailed manifest information for an nfpack package
+nfpack install                         Custom("nfpack")         Install an nfpack package (fires Lua hooks, installs firewall resources)
+nfpack keygen                          Custom("nfpack")         Generate an Ed25519 signing keypair for nfpack packages
+nfpack lint                            Custom("nfpack")         Validate an nfpack package manifest and referenced files
+nfpack list                            Custom("nfpack")         List all installed nfpack packages
+nfpack logs                            Custom("nfpack")         Show recent log output for an nfpack package
+nfpack override                        Custom("nfpack")         Override a core package by copying it to the user-editable directory
+nfpack profile                         Custom("nfpack")         Profile every Lua script in an nfpack package (no daemon required)
+nfpack publish                         Custom("nfpack")         Build, sign, and publish an nfpack to a repository
+nfpack remove                          Custom("nfpack")         Remove an nfpack package (fires Lua hooks, removes firewall resources)
+nfpack reset                           Custom("nfpack")         Reset a package override, reverting to the core version
+nfpack restore                         Custom("nfpack")         Restore an nfpack package from a backup archive
+nfpack search                          Custom("nfpack")         Search for packages in configured nfpack repositories
+nfpack sign                            Custom("nfpack")         Sign an nfpack package with an Ed25519 key
+nfpack stats                           Custom("nfpack")         Show runtime statistics for an nfpack package
+nfpack status                          Custom("nfpack")         Show the health and runtime status of an nfpack package
+nfpack test                            Custom("nfpack")         Run a package's tests/*.lua test suite (P3C: MockLuaHost, no daemon required)
+nfpack trust                           Custom("nfpack")         Add an Ed25519 public key to the trusted keyring for package verification
+nfpack update                          Custom("nfpack")         Update/upgrade an nfpack package (runs pre/on/post upgrade hooks)
+nfpack validate                        Custom("nfpack")         Run the validation hook for an nfpack package
+nfpack verify                          Custom("nfpack")         Verify the signature of an nfpack package against trusted keys
+nfpack watch                           Custom("nfpack")         Watch a package directory and re-run lint + test on every change
+no interface ipv6 track-interface      Custom("interface")      Stop tracking a WAN's delegated IPv6 prefix; resets IPv6 mode to none
+no interface mac-override              Custom("interface")      Remove the MAC address override from the current interface
+no interface pppoe-delegated-from      Custom("interface")      Stop tracking a PPPoE delegated prefix on the current interface
+no interface vlan                      Custom("interface")      Remove VLAN configuration from the current interface
+no ip address                          Custom("interface")      Remove IP address from the current interface
+no shutdown                            Custom("interface")      Administratively enable the current interface
+no wireless                            Custom("interface")      Remove all wireless configuration from the current interface
+no wireless client-isolation           Custom("interface")      Disable wireless client isolation on the current interface
+no wireless hidden                     Custom("interface")      Show the SSID in beacon frames on the current interface
+ntp server add                         Custom("ntp")            Add an NTP server to candidate config
+ntp server remove                      Custom("ntp")            Remove an NTP server from candidate config
+ospf                                   Custom("routing")        Enter OSPF routing configuration mode
+ospf area add                          Custom("ospf")           Add an OSPF area to candidate config
+ospf area remove                       Custom("ospf")           Remove an OSPF area from candidate config
+ospf network add                       Custom("ospf")           Add a network to an OSPF area
+ospf network remove                    Custom("ospf")           Remove a network from an OSPF area
+overlay                                Core                     Commands for manipulating overlays.
+overlay hide                           Core                     Hide an active overlay.
+overlay list                           Core                     List all overlays with their active status.
+overlay new                            Core                     Create an empty overlay.
+overlay use                            Core                     Use definitions from a module as an overlay.
+package action                         Custom("packages")       Trigger a package action (e.g., refresh feeds, download data)
+package backup                         Custom("packages")       Backup a package to a tar.zst archive
+package console                        Custom("packages")       Open an interactive Lua console for a package
+package create                         Custom("packages")       Create a new package scaffold
+package download                       Custom("packages")       Download a package from a repository (does not auto-install)
+package generate                       Custom("packages")       Generate a complete package from a natural language description using local AI (Satori 8B)
+package install                        Custom("packages")       Install/enable a package (fires Lua hooks, installs firewall resources)
+package jobs                           Custom("packages")       List all running/completed package jobs
+package keygen                         Custom("packages")       Generate an Ed25519 signing keypair for package signing
+package lint                           Custom("packages")       Validate a package manifest and Lua scripts
+package override                       Custom("packages")       Copy a core package to /etc for local customization
+package profile                        Custom("packages")       Profile Lua scripts in a package to identify performance bottlenecks
+package publish                        Custom("packages")       Build, sign, and publish a package to a repository
+package reload                         Custom("packages")       Hot-reload a package (re-read manifest, re-register events/scheduler)
+package remove                         Custom("packages")       Disable/remove a package (fires Lua hooks, removes firewall resources)
+package repo-index                     Custom("packages")       Generate a repository index.yaml from .tar.zst package archives
+package reset                          Custom("packages")       Reset a package to shipped defaults, or wipe all installed packages with --all
+package restore                        Custom("packages")       Restore a package from a backup archive
+package run-now                        Custom("packages")       Manually trigger a package scheduled job now
+package search                         Custom("packages")       Search for packages in configured repositories
+package sign                           Custom("packages")       Sign a package manifest or archive with an Ed25519 private key
+package test                           Custom("packages")       Run unit tests for a package
+package trust                          Custom("packages")       Add a public key to the trusted keys directory for signature verification
+package uninstall                      Custom("packages")       Permanently uninstall a package (run pre_remove hooks, disable, delete directory)
+package update                         Custom("packages")       Check all installed packages for available updates
+package upgrade                        Custom("packages")       Upgrade a package (runs pre/on/post upgrade hooks, reapplies firewall resources)
+package verify                         Custom("packages")       Verify the signature of a package against trusted keys
+package watch                          Custom("packages")       Watch package files and auto-run lint + test on changes
+pbr binding add                        Custom("pbr")            Bind a PBR policy to an interface
+pbr binding remove                     Custom("pbr")            Remove a PBR interface binding
+pbr policy add                         Custom("pbr")            Add a policy-based routing rule
+pbr policy remove                      Custom("pbr")            Remove a policy-based routing rule
+pim interface add                      Custom("routing")        Add an interface to PIM
+pim interface remove                   Custom("routing")        Remove an interface from PIM
+pim set                                Custom("routing")        Set PIM parameters
+ping                                   Custom("diagnostics")    Send ICMP echo requests
+poe disable                            Custom("poe")            Disable PoE delivery on a port
+poe enable                             Custom("poe")            Enable PoE delivery on a port
+poe led                                Custom("poe")            Turn a PoE port's status LED on or off
+poe legacydetect                       Custom("poe")            Enable/disable legacy (non-802.3af) PD detection for a PoE port
+poe maxpower                           Custom("poe")            Set the max power budget class for a PoE port
+poe priority                           Custom("poe")            Set the power priority class for a PoE port
+policy                                 Custom("routing")        Enter policy (route-maps, prefix-lists) configuration mode
+policy-group add                       Custom("policy-group")   Add an application policy group
+policy-group remove                    Custom("policy-group")   Remove an application policy group
+port-test                              Custom("diagnostics")    Test if a TCP/UDP port is reachable
+poweroff                               Custom("system")         Shut down the system
+pppoe connect                          Custom("interfaces")     Force a PPPoE session to dial now (resets backoff, overrides connect_on_boot=false once)
+pppoe disconnect                       Custom("interfaces")     Terminate a PPPoE session; it will NOT auto-reconnect until the next commit or 'pppoe connect'
+pppoe interface add                    Custom("pppoe")          Add a PPPoE interface to candidate config
+pppoe interface remove                 Custom("pppoe")          Remove a PPPoE interface from candidate config
+pppoe logs                             Custom("interfaces")     Tail the pppd log for a PPPoE session; use --follow to stream new lines
+pppoe server disable                   Custom("pppoe-server")   Disable PPPoE server in candidate config
+pppoe server enable                    Custom("pppoe-server")   Enable PPPoE server in candidate config
+pppoe server gateway                   Custom("pppoe-server")   Set PPPoE server gateway address
+pppoe server interface add             Custom("pppoe-server")   Add an interface to PPPoE server
+pppoe server interface remove          Custom("pppoe-server")   Remove an interface from PPPoE server
+pppoe server ip-pool add               Custom("pppoe-server")   Add an IPv4 pool to PPPoE server
+pppoe server ip-pool remove            Custom("pppoe-server")   Remove an IPv4 pool from PPPoE server
+pppoe server ipv6-pool add             Custom("pppoe-server")   Add an IPv6 pool to PPPoE server
+pppoe server ipv6-pool remove          Custom("pppoe-server")   Remove an IPv6 pool from PPPoE server
+pppoe server mtu                       Custom("pppoe-server")   Set PPPoE server MTU
+pppoe server name-server add           Custom("pppoe-server")   Add a name server to PPPoE server
+pppoe server name-server remove        Custom("pppoe-server")   Remove a name server from PPPoE server
+pppoe server user add                  Custom("pppoe-server")   Add a local user to PPPoE server
+pppoe server user remove               Custom("pppoe-server")   Remove a local user from PPPoE server
+prefix-list add                        Custom("routing")        Add a prefix-list entry to candidate config
+prefix-list remove                     Custom("routing")        Remove a prefix-list or a specific entry from candidate config
+prepend                                Filters                  Prepend a value to the beginning of a list
+prometheus disable                     Custom("prometheus")     Disable Prometheus metrics endpoint
+prometheus enable                      Custom("prometheus")     Enable Prometheus metrics endpoint
+qos app dscp                           Custom("qos")            Set DSCP marking for a specific application
+qos category dscp                      Custom("qos")            Set DSCP marking for an application category
+qos disable                            Custom("qos")            Disable QoS enforcement on an interface
+qos enable                             Custom("qos")            Enable QoS enforcement on an interface
+qos rate-limit app                     Custom("qos")            Set per-application rate limit
+radius server add                      Custom("radius")         Add a RADIUS server to candidate config
+radius server remove                   Custom("radius")         Remove a RADIUS server from candidate config
+range                                  Filters                  Extract a slice from a list by index range
+reboot                                 Custom("system")         Reboot the system
+reduce                                 Filters                  Reduce a column to a single value
+reject                                 Filters                  Remove columns from table or record
+rename                                 Filters                  Rename columns (by position)
+return                                 Core                     Return early from a custom command.
+reverse                                Filters                  Reverse the order of rows
+reverse-proxy access allow             Custom("reverse-proxy")  Add an IP address or CIDR range to a site's allow list (only listed source IPs may reach the site once this is non-empty)
+reverse-proxy access deny              Custom("reverse-proxy")  Add an IP address or CIDR range to a site's deny list
+reverse-proxy access remove            Custom("reverse-proxy")  Remove an IP address or CIDR range from a site's allow and deny lists
+reverse-proxy disable                  Custom("reverse-proxy")  Disable the reverse proxy (Caddy)
+reverse-proxy enable                   Custom("reverse-proxy")  Enable the reverse proxy (Caddy)
+reverse-proxy sekisho allow            Custom("reverse-proxy")  Add an allow rule to a site's Sekisho policy. Rules are OR'd -- a session matching ANY rule is granted access.
+reverse-proxy sekisho disable          Custom("reverse-proxy")  Disable Sekisho on a reverse proxy site. Allow rules and session TTL are preserved so re-enabling doesn't require re-entering them.
+reverse-proxy sekisho enable           Custom("reverse-proxy")  Gate a reverse proxy site behind Sekisho's identity-aware login. Fails closed: with no allow rules, every request is denied -- add rules with 'reverse-proxy sekisho allow' before or after enabling.
+reverse-proxy sekisho remove           Custom("reverse-proxy")  Remove an allow rule from a site's Sekisho policy
+reverse-proxy sekisho ttl              Custom("reverse-proxy")  Set how long a granted Sekisho session stays valid on a site, in seconds
+reverse-proxy sekisho-idp disable      Custom("reverse-proxy")  Disable Sekisho's login/authorize process. Any site still enabled for Sekisho will deny all requests until this is re-enabled -- fail-closed, not a bypass.
+reverse-proxy sekisho-idp enable       Custom("reverse-proxy")  Enable Sekisho's isolated login/authorize process on the given hostname. Required before any site's 'reverse-proxy sekisho enable' can take effect -- without it, a gated site denies every request with no way to authenticate.
+reverse-proxy sekisho-idp user add     Custom("reverse-proxy")  Create or replace a Sekisho end-user account. Separate from nfSensei admin accounts (design spec D9) -- takes effect immediately, no commit needed.
+reverse-proxy sekisho-idp user remove  Custom("reverse-proxy")  Remove a Sekisho end-user account. Takes effect immediately -- any existing session for that user remains valid until it expires (this does not revoke live sessions).
+reverse-proxy site add                 Custom("reverse-proxy")  Add a reverse proxy site
+reverse-proxy site disable             Custom("reverse-proxy")  Disable a reverse proxy site
+reverse-proxy site enable              Custom("reverse-proxy")  Enable a reverse proxy site
+reverse-proxy site remove              Custom("reverse-proxy")  Remove a reverse proxy site
+reverse-proxy site set                 Custom("reverse-proxy")  Update a reverse proxy site's hostnames, listen port, load-balance policy, or description
+reverse-proxy site tls                 Custom("reverse-proxy")  Configure a reverse proxy site's frontend (listener) TLS -- the certificate served to the internet
+reverse-proxy upstream add             Custom("reverse-proxy")  Add a backend upstream server to a reverse proxy site
+reverse-proxy upstream remove          Custom("reverse-proxy")  Remove a backend upstream server from a reverse proxy site
+reverse-proxy upstream tls             Custom("reverse-proxy")  Configure backend (upstream) TLS for a reverse proxy upstream
+rip network add                        Custom("routing")        Add a network to RIP
+rip network remove                     Custom("routing")        Remove a network from RIP
+rip set                                Custom("routing")        Set RIP parameters
+ripng network add                      Custom("routing")        Add a network to RIPng
+ripng network remove                   Custom("routing")        Remove a network from RIPng
+ripng set                              Custom("routing")        Set RIPng parameters
+rollback                               Custom("config")         Rollback running config to a prior commit
+rollback restore                       Custom("config")         Restore configuration from a snapshot
+rollback snapshot                      Custom("config")         Create a named configuration snapshot for later rollback
+route add                              Custom("routing")        Add a static route to candidate config
+route remove                           Custom("routing")        Remove a static route from candidate config
+route-map add                          Custom("routing")        Add a route-map entry to candidate config
+route-map remove                       Custom("routing")        Remove a route-map or a specific entry from candidate config
+routing                                Custom("routing")        Enter routing configuration mode
+run-external                           System                   Run an external command (^command syntax)
+scope                                  Core                     Commands for getting info about what is in scope.
+scope aliases                          Core                     Output info on the aliases in the current scope.
+scope commands                         Core                     Output info on the commands in the current scope.
+scope engine-stats                     Core                     Output stats on the engine in the current state.
+scope externs                          Core                     Output info on the known externals in the current scope.
+scope modules                          Core                     Output info on the modules in the current scope.
+scope variables                        Core                     Output info on the variables in the current scope.
+secrets lock                           Custom("secrets")        Lock secrets store and clear derived key from memory
+secrets unlock                         Custom("secrets")        Unlock the encrypted secrets store with a passphrase
+security hardening defaults            Custom("config")         Reset all security hardening settings to secure defaults
+security hardening disable             Custom("config")         Disable a security hardening setting
+security hardening enable              Custom("config")         Enable a security hardening setting
+select                                 Filters                  Select columns from table or record
+service apply                          Custom("service")        Regenerate a service's runtime config from running.yaml and reload it
+setup                                  Custom("system")         Quick interface setup — assign roles, IPs, and DHCP from the console
+sflow collector add                    Custom("sflow")          Add an sFlow collector destination
+sflow collector remove                 Custom("sflow")          Remove an sFlow collector destination
+sflow disable                          Custom("sflow")          Disable sFlow telemetry
+sflow enable                           Custom("sflow")          Enable sFlow telemetry with optional parameters
+shadow apply                           Custom("config")         Apply candidate config to shadow VPP instance for validation
+shadow commit                          Custom("config")         Promote validated shadow VPP instance to active
+shadow discard                         Custom("config")         Tear down shadow VPP instance without promotion
+shell                                  Custom("system")         Drop to an OS shell (or run a single command)
+show ab-test                           Custom("dataplane")      Show A/B dataplane test status and metrics
+show anchors                           Custom("firewall")       Display all configured firewall anchors
+show anycast                           Custom("anycast")        Display configured BGP anycast prefixes (Anycast Setup Wizard)
+show app-id                            Custom("security")       Display App-ID configuration summary
+show auth                              Custom("security")       Display authentication configuration summary
+show auth users                        Custom("security")       Display all configured user accounts
+show backup                            Custom("system")         Display backup configuration
+show bfd                               Custom("routing")        Display BFD peer configuration
+show bfd status                        Custom("routing")        Display BFD configuration status
+show bgp neighbors                     Custom("routing")        Display BGP neighbor configuration
+show bgp summary                       Custom("routing")        Display BGP configuration summary
+show bonds                             Custom("interfaces")     Display all configured bond/LAG interfaces
+show bridge-domains                    Custom("interfaces")     Display all configured L2 bridge domains
+show candidate-config                  Custom("config")         Display the candidate configuration as YAML
+show cellular data-usage               Custom("cellular")       Display data usage report for a cellular modem
+show cellular modems                   Custom("cellular")       Display all configured cellular modems
+show cellular signal                   Custom("cellular")       Display signal quality metrics for a cellular modem
+show cellular status                   Custom("cellular")       Display detailed status of a specific cellular modem
+show certificates                      Custom("security")       Display all configured certificates
+show certificates ca                   Custom("security")       Display all configured CA certificates
+show cloud status                      Custom("cloud")          Display cloud management agent status
+show commit                            Custom("config")         Show what a specific historical commit actually changed
+show commit-confirm                    Custom("config")         Show pending commit confirmation status and remaining time
+show commits                           Custom("config")         List all config commits
+show community-lists                   Custom("routing")        Display all configured BGP community lists
+show connections                       Custom("firewall")       Display connection statistics summary
+show connections detail                Custom("firewall")       Display active connections with full detail
+show connections threat                Custom("firewall")       Display unified session view with app-id and policy enrichment
+show crash-loop                        Custom("system")         Display crash-loop breaker configuration
+show dataplane                         Custom("dataplane")      Show dataplane interface bindings
+show dataplane backends                Custom("dataplane")      Show registered dataplane backends and their characteristics
+show dataplane capabilities            Custom("dataplane")      Show backend capability matrix
+show dataplane health                  Custom("dataplane")      Show per-interface dataplane health status
+show dataplane stats                   Custom("dataplane")      Show per-backend statistics
+show dhcp leases                       Custom("service")        Display configured DHCP static leases
+show dhcp pools                        Custom("service")        Display configured DHCP pools
+show dhcpv6 leases                     Custom("service")        Display active DHCPv6 leases
+show dhcpv6 networks                   Custom("service")        Display configured DHCPv6 shared networks
+show dhcpv6 pd-routes                  Custom("service")        Display DHCPv6 prefix delegation routes
+show dhcpv6 status                     Custom("service")        Display DHCPv6 server status
+show disk                              Custom("system")         Display disk usage, block devices, and SMART health data
+show dns config                        Custom("service")        Display DNS server configuration
+show dns zones                         Custom("service")        Display configured DNS zones
+show dns-filter rules                  Custom("security")       Display all configured DNS filter rules
+show dot1x                             Custom("security")       Display 802.1X port authentication configuration
+show eigrp                             Custom("routing")        Display EIGRP configuration and status summary
+show fabric delegation                 Custom("fabric")         Show the prefix delegation(s) this edge has received from its head-end hub
+show firewall rules                    Custom("firewall")       Display configured firewall rules
+show flow-export                       Custom("monitoring")     Display NetFlow/IPFIX flow export configuration
+show flows                             Custom("firewall")       Show captured flows or list capture sessions
+show gateways                          Custom("routing")        Display configured multi-WAN gateways
+show ha                                Custom("system")         Display high-availability / VRRP configuration
+show ha status                         Custom("system")         Display live VRRP/keepalived status: which node is MASTER right now
+show help                              Core                     List all available 'show' commands
+show identity status                   Custom("security")       Display identity source configuration status
+show identity-provider                 Custom("auth")           Display the redacted live status of nfSensei's built-in OIDC provider head
+show impact                            Custom("config")         Analyze impact of pending config changes (candidate vs running)
+show interface chain                   Custom("dataplane")      Show the packet processing chain from physical NIC through dataplane to services
+show interface detect                  Custom("interface")      Scan hardware and display detected physical network interfaces
+show interface mismatch                Custom("interface")      Display mismatches between configured and detected hardware interfaces
+show interface names                   Custom("dataplane")      Show cross-layer interface name mappings (Config -> PCI -> DPDK -> VPP -> Linux -> Zone)
+show interfaces                        Custom("interface")      Display configured network interfaces
+show ips alerts                        Custom("security")       Display recent Suricata IPS alerts
+show ips profiles                      Custom("security")       Display configured Suricata IPS profiles and their NFQUEUE assignments
+show ips signatures                    Custom("security")       Display all IPS signatures and their configuration
+show ips status                        Custom("security")       Display IPS engine status and configuration summary
+show ipsec status                      Custom("vpn")            Display LIVE IPsec security associations from strongSwan (state, peers, algorithms, age)
+show ipsec summary                     Custom("vpn")            Display IPsec tunnel summary
+show isis                              Custom("routing")        Display IS-IS configuration summary
+show ldp                               Custom("routing")        Display LDP configuration summary
+show lldp                              Custom("system")         Display LLDP configuration summary
+show lldp interfaces                   Custom("system")         Display per-interface LLDP configuration
+show load-balancer aralez              Custom("load-balancer")  Display Aralez L7 reverse proxy status
+show load-balancer health-checks       Custom("load-balancer")  Display configured health checks
+show load-balancer pool                Custom("load-balancer")  Display server pool details with members
+show load-balancer statistics          Custom("load-balancer")  Display load balancer statistics (from running config)
+show load-balancer status              Custom("load-balancer")  Display load balancer status overview
+show load-balancer virtual-servers     Custom("load-balancer")  Display configured virtual servers
+show logging                           Custom("system")         Display logging configuration summary
+show logging servers                   Custom("system")         Display configured remote syslog servers
+show mesh policy compiled              Custom("mesh-policy")    Show compiled mesh policy for a specific target (dry-run preview)
+show mesh policy diff                  Custom("mesh-policy")    Show the desired mesh policy vs the live remote state for a target
+show mesh policy status                Custom("mesh-policy")    Show mesh policy target reconciliation status
+show mlag                              Custom("interfaces")     Display MLAG (Multi-Chassis Link Aggregation) configuration
+show nat rules                         Custom("nat")            Display configured NAT rules (outbound, inbound, binat, port-forward)
+show nfsensei                          Custom("system")         Display nfSensei plugin status (connections, stats, rules, NAT pools)
+show ntp                               Custom("system")         Display NTP configuration summary
+show ntp servers                       Custom("system")         Display configured NTP servers
+show offload                           Custom("system")         Display hardware offload capabilities and status for interfaces
+show ospf                              Custom("routing")        Display OSPF configuration summary
+show packages                          Custom("packages")       List installed packages or show package details
+show packages deprecations             Custom("packages")       Show deprecated API usage warnings from packages
+show packages events                   Custom("packages")       Show event pipeline: which packages emit and consume events
+show packages exports                  Custom("packages")       List exported functions available for inter-package RPC via pkg.call()
+show packages schedules                Custom("packages")       List all package cron schedules
+show pbr                               Custom("routing")        Display Policy-Based Routing configuration
+show pbr policies                      Custom("routing")        Display PBR policy routes
+show pim                               Custom("routing")        Display PIM configuration summary
+show plugins                           Custom("system")         Display installed plugins
+show poe status                        Custom("poe")            Display PoE (Power over Ethernet) port status
+show policy-groups                     Custom("policy")         Display all configured policy groups
+show pppoe                             Custom("interfaces")     Display PPPoE client session status (live from daemon); pass a session name for the detailed view
+show pppoe server sessions             Custom("service")        Display active PPPoE server sessions
+show pppoe server stats                Custom("service")        Display aggregated PPPoE server statistics
+show pppoe server status               Custom("service")        Display PPPoE server status
+show prefix-lists                      Custom("routing")        Display all configured IP prefix lists
+show prometheus                        Custom("system")         Display Prometheus metrics export configuration
+show qos                               Custom("firewall")       Display QoS configuration summary and per-interface recommendations
+show qos limiters                      Custom("firewall")       Display configured bandwidth limiters (nftables meter expressions)
+show qos policy                        Custom("qos")            Display active QoS policy rules (DSCP markings, rate limits, enabled interfaces)
+show qos queues                        Custom("firewall")       Display configured traffic-shaping queues (Linux tc HTB classes)
+show qos statistics                    Custom("qos")            Display per-app and per-category QoS bandwidth usage statistics
+show radius                            Custom("security")       Display RADIUS client configuration
+show resource-arbiter status           Custom("system")         Display every port-slot the resource arbiter knows about, with current owner
+show reverse-proxy site                Custom("reverse-proxy")  Display full detail for one reverse proxy site, including upstream backend TLS and access control
+show reverse-proxy sites               Custom("reverse-proxy")  Display configured reverse proxy sites
+show rip                               Custom("routing")        Display RIP configuration summary
+show ripng                             Custom("routing")        Display RIPng configuration summary
+show rollback snapshots                Custom("config")         List available configuration snapshots
+show route-maps                        Custom("routing")        Display all configured route maps
+show routing table                     Custom("routing")        Display the routing table
+show running-config                    Custom("config")         Display the running configuration as YAML
+show secrets                           Custom("secrets")        List secret names and encryption status (values are never displayed)
+show security hardening                Custom("security")       Display security hardening score and active settings
+show security sysctl                   Custom("security")       Display configured sysctl hardening parameters
+show sekisho idp                       Custom("reverse-proxy")  Display Sekisho's global login-surface configuration (auth.sekisho_idp)
+show sekisho policies                  Custom("reverse-proxy")  Display every reverse proxy site's Sekisho policy in one flat table, across the whole site list
+show sekisho users                     Custom("reverse-proxy")  List Sekisho end-user accounts (username + groups only -- never a password or its hash)
+show services                          Custom("system")         Display configured management services (SSH, Web GUI, local syslog)
+show sflow                             Custom("system")         Display sFlow telemetry configuration
+show shadow                            Custom("config")         Show shadow VPP instance status and validation results
+show snmp                              Custom("system")         Display SNMP configuration summary
+show snmp traps                        Custom("system")         Display configured SNMP trap destinations
+show srv6                              Custom("routing")        Display SRv6 (Segment Routing over IPv6) configuration
+show stacks                            Custom("system")         Display configured stacks (VRFs)
+show standby                           Custom("system")         Show warm-standby VPP status, sync statistics, and heartbeat
+show system cpu                        Custom("system")         Display CPU utilization and statistics
+show system disk                       Custom("system")         Display disk usage and filesystem information
+show system hardware                   Custom("system")         Display hardware inventory (CPU, RAM, NICs, storage)
+show system health                     Custom("system")         Display overall system health status
+show system license                    Custom("system")         Display device license stamp and binary integrity status
+show system memory                     Custom("system")         Display memory utilization including hugepages and swap
+show system processes                  Custom("system")         Display running processes sorted by CPU usage
+show system resources                  Custom("system")         Display combined CPU, memory, and disk resource utilization
+show system temperature                Custom("system")         Display temperature sensor readings
+show system timeouts                   Custom("system")         Display global and per-VRF connection timeouts
+show system uptime                     Custom("system")         Display system uptime
+show tables                            Custom("firewall")       Display all configured firewall tables
+show tech-support                      Custom("diagnostics")    List previously generated tech support bundles
+show urpf                              Custom("security")       Display uRPF (Unicast Reverse Path Forwarding) configuration
+show user-intel                        Custom("security")       Display User Intelligence configuration
+show version                           Custom("system")         Display nfSensei version and system information
+show vpn                               Custom("vpn")            Display configured VPN tunnels (WireGuard, IPsec, Tailscale, NetBird)
+show vpn netbird client                Custom("vpn")            Display detailed status for a NetBird mesh VPN client
+show vpn netbird client peers          Custom("vpn")            Display peers for a NetBird mesh VPN client
+show vpn netbird clients               Custom("vpn")            Display all NetBird mesh VPN clients with status
+show vpn tailscale client              Custom("vpn")            Display detailed status for a Tailscale mesh VPN client
+show vpn tailscale client peers        Custom("vpn")            Display peers for a Tailscale mesh VPN client
+show vpn tailscale clients             Custom("vpn")            Display all Tailscale mesh VPN clients with status
+show watchdog                          Custom("system")         Display device health watchdog configuration
+show wifi                              Custom("wireless")       Display overview of all wireless interfaces
+show wifi channel-survey               Custom("wireless")       Display wireless channel utilization survey
+show wifi client scan                  Custom("wireless")       Scan for available WiFi networks from a client/station interface
+show wifi client status                Custom("wireless")       Display WiFi client/station connection status
+show wifi clients                      Custom("wireless")       Display connected wireless clients
+show wifi neighbors                    Custom("wireless")       Display nearby wireless access points from scan results
+show wifi radios                       Custom("wireless")       Display wireless radio hardware status
+show wireguard                         Custom("vpn")            Display LIVE WireGuard peer state from the kernel (handshake age, transfer, connected)
+show xfr                               Custom("tools")          Show saved xfr bandwidth test results
+show yang                              Custom("config")         Export configuration in YANG format or show YANG modules/schema
+show zfs                               Custom("system")         Display ZFS summary: pool health, active BE, snapshot count, auto-snapshot status
+shutdown                               Custom("interface")      Administratively disable the current interface
+skip                                   Filters                  Skip the first N rows
+snmp trap add                          Custom("snmp")           Add an SNMP trap receiver to candidate config
+snmp trap remove                       Custom("snmp")           Remove an SNMP trap receiver from candidate config
+sort-by                                Filters                  Sort table by column(s)
+split                                  Filters                  Split a string into a list by separator
+srv6 disable                           Custom("srv6")           Disable SRv6 segment routing
+srv6 enable                            Custom("srv6")           Enable SRv6 segment routing
+srv6 local-sid add                     Custom("srv6")           Add an SRv6 local SID entry
+srv6 local-sid remove                  Custom("srv6")           Remove an SRv6 local SID entry
+srv6 locator remove                    Custom("srv6")           Remove the SRv6 locator
+srv6 locator set                       Custom("srv6")           Set SRv6 locator configuration
+srv6 policy add                        Custom("srv6")           Add an SRv6 policy with an initial candidate path
+srv6 policy remove                     Custom("srv6")           Remove an SRv6 policy
+srv6 steering add                      Custom("srv6")           Add an SRv6 traffic steering rule
+srv6 steering remove                   Custom("srv6")           Remove an SRv6 traffic steering rule
+ssh disable                            Custom("services")       Disable SSH service
+ssh enable                             Custom("services")       Enable SSH service
+ssh set                                Custom("services")       Set SSH service parameters
+ssl-check                              Custom("diagnostics")    Check SSL/TLS certificate details
+stack                                  Custom("system")         Enter stack (VRF) configuration mode
+stack add                              Custom("stack")          Create a network stack
+stack remove                           Custom("stack")          Remove a network stack
+stack set                              Custom("stack")          Modify stack settings (VRF ID, description, per-VRF timeouts)
+standby disable                        Custom("system")         Disable and stop warm-standby VPP instance
+standby enable                         Custom("system")         Enable warm-standby VPP instance for instant failover
+str                                    Strings                  String operations (contains, trim, length, replace, upcase, downcase)
+str contains                           Strings                  Check if string contains a substring
+str downcase                           Strings                  Convert string to lowercase
+str length                             Strings                  Get the length of a string
+str replace                            Strings                  Replace text in a string
+str trim                               Strings                  Trim whitespace from string
+str upcase                             Strings                  Convert string to uppercase
+support approve                        Custom("support")        Approve a pending support command
+support deny                           Custom("support")        Deny a pending support command
+support disable                        Custom("support")        Disable the active remote support session
+support enable                         Custom("support")        Enable a remote support session
+support status                         Custom("support")        Show the current remote support session status
+synproxy disable                       Custom("global")         Disable SYN proxy flood protection
+synproxy enable                        Custom("global")         Enable SYN proxy flood protection
+system                                 Custom("system")         Enter system configuration mode
+system upgrade apply                   Custom("system")         Apply the staged upgrade and reboot
+system upgrade auto                    Custom("system")         Check, download, and apply the latest update in one step
+system upgrade check                   Custom("system")         Check for available system updates
+system upgrade confirm                 Custom("system")         Confirm the upgrade after reboot, cancel auto-rollback timer
+system upgrade download                Custom("system")         Download the available system update to staging
+system upgrade history                 Custom("system")         Show past upgrade history
+system upgrade local                   Custom("system")         Stage a local rootfs image for upgrade (bypasses update server)
+system upgrade rollback                Custom("system")         Rollback to the previous version and reboot
+system upgrade status                  Custom("system")         Show current upgrade state
+table add                              Custom("table")          Create a new IP address table
+table entry add                        Custom("table")          Add an entry to an IP address table
+table entry remove                     Custom("table")          Remove an entry from an IP address table
+table fetch                            Custom("table")          Trigger an immediate refresh of a url-table alias's entries
+table remove                           Custom("table")          Remove an IP address table
+table set                              Custom("table")          Modify settings on an existing IP address table
+tailscale disable                      Custom("tailscale")      Disable Tailscale VPN (legacy single-client)
+tailscale enable                       Custom("tailscale")      Enable and configure Tailscale VPN (legacy single-client)
+take                                   Filters                  Take the first N items from a list (alias for first)
+tech-support collect                   Custom("diagnostics")    Generate a comprehensive tech support bundle for troubleshooting
+to                                     Formats                  Convert data to a format (json, csv, yaml, text, md)
+to csv                                 Formats                  Convert table to CSV
+to json                                Formats                  Convert table or value to JSON
+to md                                  Formats                  Convert table to Markdown
+to text                                Formats                  Convert value to plain text
+to yaml                                Formats                  Convert table or value to YAML
+traceroute                             Custom("diagnostics")    Trace the route to a host
+transpose                              Filters                  Pivot table: rows become columns, columns become rows
+try                                    Core                     Try to run a block, if it fails optionally run a catch closure.
+ttl                                    Custom("diagnostics")    Trace the network path to a target with per-hop latency, ASN, and geo data
+uniq                                   Filters                  Remove duplicate rows
+unlock wan                             Custom("firewall")       Allow SSH, HTTP, HTTPS, and Web GUI (8080) from WAN subnet and apply immediately
+update                                 Filters                  Update a column value in each row
+urpf interface add                     Custom("urpf")           Add uRPF configuration to an interface
+urpf interface remove                  Custom("urpf")           Remove uRPF configuration from an interface
+use                                    Core                     Use definitions from a module, making them available in your shell.
+user add                               Custom("auth")           Add a user account
+user password                          Custom("auth")           Set an existing user's password (hashes it for you)
+user remove                            Custom("auth")           Remove a user account
+user-intel disable                     Custom("user-intel")     Disable User Intelligence collection
+user-intel enable                      Custom("user-intel")     Enable User Intelligence collection
+user-intel set                         Custom("user-intel")     Set User Intelligence parameters
+validate config                        Custom("config")         Check the running configuration for issues without committing
+values                                 Filters                  Extract values from a record as a list
+vrrp add                               Custom("vrrp")           Add a VRRP instance to candidate config
+vrrp remove                            Custom("vrrp")           Remove a VRRP instance from candidate config
+vxlan add                              Custom("vxlan")          Add a VXLAN tunnel to candidate config
+vxlan remove                           Custom("vxlan")          Remove a VXLAN tunnel from candidate config
+watchdog disable                       Custom("watchdog")       Disable device health watchdog
+watchdog enable                        Custom("watchdog")       Enable device health watchdog
+watchdog interface add                 Custom("watchdog")       Add an interface to watchdog monitoring
+watchdog interface remove              Custom("watchdog")       Remove an interface from watchdog monitoring
+watchdog set                           Custom("watchdog")       Set device watchdog parameters
+webgui disable                         Custom("services")       Disable Web GUI
+webgui enable                          Custom("services")       Enable Web GUI
+webgui set                             Custom("services")       Set Web GUI parameters
+webgui show                            Custom("services")       Show current Web GUI configuration
+where                                  Filters                  Filter rows where a column matches a condition
+while                                  Core                     Conditionally run a block in a loop.
+whois                                  Custom("diagnostics")    Look up domain or IP registration info
+wireguard peer add                     Custom("wireguard")      Add a peer to a WireGuard tunnel
+wireguard peer remove                  Custom("wireguard")      Remove a peer from a WireGuard tunnel
+wireguard tunnel add                   Custom("wireguard")      Create a WireGuard tunnel interface (add peers afterward with 'wireguard peer add')
+wireguard tunnel remove                Custom("wireguard")      Remove a WireGuard tunnel (and its peers) from candidate config
+wireless band                          Custom("interface")      Set the wireless radio band on the current interface
+wireless channel                       Custom("interface")      Set the wireless channel on the current interface
+wireless channel-width                 Custom("interface")      Set the wireless channel width on the current interface
+wireless client-isolation              Custom("interface")      Enable wireless client isolation on the current interface
+wireless connect                       Custom("wireless")       Connect to a WiFi network (client/station mode)
+wireless country                       Custom("interface")      Set the wireless regulatory country on the current interface
+wireless disconnect                    Custom("wireless")       Disconnect from a WiFi network and stop wpa_supplicant
+wireless hidden                        Custom("interface")      Hide the SSID from beacon frames on the current interface
+wireless max-clients                   Custom("interface")      Set maximum wireless clients on the current interface
+wireless mode                          Custom("interface")      Set wireless operating mode on the current interface
+wireless passphrase                    Custom("interface")      Set the WPA passphrase on the current interface
+wireless security                      Custom("interface")      Set wireless security type on the current interface
+wireless ssid                          Custom("interface")      Set the wireless SSID on the current interface
+wireless tx-power                      Custom("interface")      Set the wireless transmit power on the current interface
+wizard app-qos                         Custom("wizard")         Configure application-aware QoS with App-ID classification and traffic shaping
+wizard automation-rule                 Custom("wizard")         Create event-driven automation rules that trigger commands, alerts, or webhooks
+wizard backup                          Custom("wizard")         Configure automatic backup schedules with local, SFTP, or S3 destinations
+wizard bfd                             Custom("wizard")         Configure Bidirectional Forwarding Detection for fast failure detection
+wizard bgp-peering                     Custom("wizard")         Configure BGP routing with neighbor peering and network advertisements
+wizard bond                            Custom("wizard")         Create a bonded (link aggregation) interface from multiple physical members
+wizard bridge-domain                   Custom("wizard")         Create a Layer-2 bridge domain with member interfaces and a BVI routed address
+wizard ca-cert                         Custom("wizard")         Create an internal Certificate Authority for VPN and TLS services
+wizard dhcp                            Custom("wizard")         Configure a DHCP server pool with address ranges and options
+wizard diagnostics                     Custom("wizard")         Run network diagnostic tools (ping, traceroute, DNS, port test, SSL check)
+wizard dns-filter                      Custom("wizard")         Configure DNS-based content filtering with block lists and domain overrides
+wizard dns-server                      Custom("wizard")         Set up a local DNS server with forwarders and optional zone hosting
+wizard dpdk                            Custom("wizard")         Configure DPDK userspace dataplane for high-performance packet processing
+wizard eigrp                           Custom("wizard")         Configure Enhanced Interior Gateway Routing Protocol for dynamic routing
+wizard firewall-quick                  Custom("wizard")         Set up a basic firewall policy with LAN/WAN rules in minutes
+wizard firewall-rule                   Custom("wizard")         Add a single firewall rule with source, destination, and action
+wizard flow-export                     Custom("wizard")         Configure NetFlow/IPFIX flow export to a collector for traffic visibility
+wizard gateway                         Custom("wizard")         Configure an upstream gateway with health monitoring
+wizard geneve                          Custom("wizard")         Create a GENEVE (Generic Network Virtualization Encapsulation) tunnel interface
+wizard gre                             Custom("wizard")         Create a GRE tunnel interface with optional tunnel key and IP addressing
+wizard ha-pair                         Custom("wizard")         Configure high-availability failover with state synchronization and virtual IPs
+wizard identity                        Custom("wizard")         Configure user identity sources for identity-aware firewall policies
+wizard interface                       Custom("wizard")         Configure a network interface with IP addressing, role, and link settings
+wizard ips                             Custom("wizard")         Configure IDS/IPS with signature categories and per-interface enforcement
+wizard ipsec                           Custom("wizard")         Configure an IPsec IKEv2 site-to-site tunnel with authentication and phase 2 settings
+wizard isis                            Custom("wizard")         Configure Intermediate System to Intermediate System routing protocol
+wizard list                            Custom("wizard")         List all available setup wizards
+wizard mlag                            Custom("wizard")         Configure multi-chassis link aggregation with peer and member port settings
+wizard mtls                            Custom("wizard")         Configure mutual TLS authentication on a service with CA certificate verification
+wizard nat                             Custom("wizard")         Configure a NAT rule (SNAT, DNAT, or BiNAT) for address translation
+wizard netbird-dns                     Custom("wizard")         Configure private DNS nameservers for NetBird peers
+wizard netbird-enroll                  Custom("wizard")         Enroll this nfSensei device into a NetBird overlay network
+wizard netbird-network                 Custom("wizard")         Create a NetBird overlay network with a router and resource
+wizard netbird-policy                  Custom("wizard")         Create a NetBird access policy controlling peer-to-peer traffic
+wizard netbird-setup                   Custom("wizard")         Configure NetBird management server connection and API token
+wizard ntp                             Custom("wizard")         Configure NTP time synchronization and optional NTP server mode
+wizard ospf                            Custom("wizard")         Configure OSPF routing with areas, interfaces, and network type settings
+wizard pbr                             Custom("wizard")         Route traffic based on source, destination, or protocol instead of destination alone
+wizard pppoe                           Custom("wizard")         Configure a PPPoE WAN interface for DSL or fiber connections
+wizard route-policy                    Custom("wizard")         Create a route-map entry with match conditions and set actions for BGP/OSPF policy
+wizard sdwan                           Custom("wizard")         Configure an SD-WAN mesh overlay with transport selection and multi-site connectivity
+wizard snmp                            Custom("wizard")         Configure SNMP agent settings, community strings, and trap receivers
+wizard stack                           Custom("wizard")         Create a VRF routing stack with interface assignments and route targets
+wizard static-route                    Custom("wizard")         Add a static route to the routing table
+wizard syslog                          Custom("wizard")         Configure local and remote syslog collection with protocol and facility options
+wizard tailscale                       Custom("wizard")         Configure Tailscale mesh VPN with auth key and subnet routing
+wizard telemetry                       Custom("wizard")         Configure sFlow telemetry for traffic sampling and network visibility
+wizard user                            Custom("wizard")         Create a user account with role-based access and authentication settings
+wizard vlan                            Custom("wizard")         Create a VLAN sub-interface on a parent interface
+wizard vrrp                            Custom("wizard")         Configure a VRRP virtual router group for gateway redundancy
+wizard vxlan                           Custom("wizard")         Create a VXLAN tunnel overlay with VNI and bridge domain options
+wizard wan-failover                    Custom("wizard")         Configure automatic WAN failover between primary and backup connections
+wizard wireguard                       Custom("wizard")         Configure a WireGuard VPN tunnel with peer and network settings
+wizard zone-firewall                   Custom("wizard")         Configure zone-based firewall with inter-zone traffic policies
+wol                                    Custom("tools")          Send Wake-on-LAN magic packet to a MAC address
+wrap                                   Filters                  Wrap a value into a record with given column name
+write                                  Custom("config")         Save running configuration to startup-config
+xfr client                             Custom("tools")          Run an xfr bandwidth test against a remote server
+xfr server                             Custom("tools")          Manage the xfr bandwidth test server (start/stop/status)
+zfs auto-snapshot run                  Custom("zfs")            Run an auto-snapshot now for the specified tier and prune old snapshots
+zfs auto-snapshot set                  Custom("zfs")            Configure the auto-snapshot policy (modifies candidate config)
+zfs auto-snapshot show                 Custom("zfs")            Display the auto-snapshot policy configuration
+zfs be activate                        Custom("zfs")            Set a boot environment as the next-boot default
+zfs be create                          Custom("zfs")            Create a new boot environment from the active one
+zfs be delete                          Custom("zfs")            Delete a boot environment (cannot delete active or running)
+zfs be list                            Custom("zfs")            List ZFS boot environments
+zfs be rename                          Custom("zfs")            Rename a ZFS boot environment
+zfs dataset list                       Custom("zfs")            List ZFS datasets with usage and properties
+zfs dataset set                        Custom("zfs")            Set properties on a ZFS dataset (compression, quota)
+zfs dataset show                       Custom("zfs")            Display detailed properties of a ZFS dataset
+zfs pool list                          Custom("zfs")            List ZFS pools with health and capacity
+zfs pool scrub                         Custom("zfs")            Start or stop a scrub on a ZFS pool
+zfs pool status                        Custom("zfs")            Display detailed pool status with vdev tree
+zfs snapshot create                    Custom("zfs")            Create a ZFS snapshot
+zfs snapshot delete                    Custom("zfs")            Delete a ZFS snapshot
+zfs snapshot list                      Custom("zfs")            List ZFS snapshots
+zfs snapshot rollback                  Custom("zfs")            Rollback a dataset to a snapshot (WARNING: destroys newer snapshots)

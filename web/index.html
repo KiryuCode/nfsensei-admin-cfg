@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>nfSensei CLI — searchable command reference</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="mark">nf</span>
+      <div>
+        <h1>nfSensei CLI</h1>
+        <p class="sub">Searchable command reference from <code>help</code> on the box</p>
+      </div>
+    </div>
+    <div class="meta" id="meta"></div>
+  </header>
+
+  <div class="search-wrap">
+    <label class="search">
+      <span class="k">/</span>
+      <input id="q" type="search" autocomplete="off" spellcheck="false"
+             placeholder="Try: add ip, vlan, dhcp, allow ssh, commit, ping…">
+    </label>
+    <p class="hint">How-tos first, then commands. Examples are lab-shaped for this box (VLAN 20 / <code>eth0.20</code>).</p>
+  </div>
+
+  <nav class="cats" id="cats"></nav>
+  <main id="main"></main>
+
+  <footer>
+    Dumped from <code>nfsensei-cli -c help</code> on hostname <code>nfsensei</code>.
+    Changes are candidate until <code>commit</code>; <code>write</code> persists them.
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
