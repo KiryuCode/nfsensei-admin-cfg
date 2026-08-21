@@ -1,0 +1,659 @@
+schema_version: 1
+system:
+  hostname: nfsensei
+  dns_servers:
+  - 1.1.1.1
+  - 8.8.8.8
+  timezone: UTC
+  setup_completed: true
+  setup_timestamp: 13845
+  radvd_valid_lifetime: 1800
+  radvd_preferred_lifetime: 600
+  radvd_min_interval: 30
+  radvd_max_interval: 100
+auth:
+  users: []
+  session_timeout: 15
+  max_sessions: 10
+services:
+  ssh:
+    enabled: true
+    port: 22
+    password_auth: true
+    key_auth: true
+    idle_timeout: 300
+    max_auth_tries: 6
+    disable_root_login: false
+  webgui:
+    enabled: true
+    http_port: 8080
+    https_port: 443
+    tls_mode: self_signed
+    session_timeout: 30
+    hard_timeout_minutes: 300
+    disable_https_redirect: false
+  syslog:
+    enabled: true
+security:
+  network_stack:
+    syn_cookies: true
+    rp_filter: true
+    reject_source_routing: true
+    reject_icmp_redirects: true
+    disable_send_redirects: true
+    ignore_icmp_broadcasts: true
+    tcp_timestamps: true
+    log_martians: true
+    reject_ipv6_redirects: true
+    reject_ipv6_source_routing: true
+  memory_process:
+    aslr: true
+    restrict_dmesg: true
+    restrict_kernel_pointers: true
+    restrict_bpf: true
+    restrict_userfaultfd: true
+    restrict_perf: true
+    sysrq_disabled: false
+    restrict_ptrace: true
+  filesystem:
+    protected_hardlinks: true
+    protected_symlinks: true
+    protected_fifos: true
+    protected_regular: true
+    restrict_mounts: true
+  boot_integrity:
+    verify_boot_partition: true
+    restrict_module_loading: true
+    lock_kernel_modules: false
+  security_updates:
+    auto_check: true
+    auto_download: false
+    auto_install: false
+    check_interval_hours: 24
+    update_channel: stable
+  readonly_root:
+    enabled: false
+    writable_overlays:
+    - /etc/nfsensei
+    - /var/log
+    - /var/lib/nfsensei
+    - /tmp
+interfaces:
+- name: eth0
+  alias: WAN
+  role: wan
+  interface_type: physical
+  addresses:
+  - dhcp
+  stack: production
+  enabled: true
+  ipv4_mode: dhcp
+  block_private: true
+  block_bogons: true
+  ipv6_mode: none
+  radvd_min_interval: 30
+  radvd_max_interval: 100
+  promiscuous: false
+  encap_tracking: inner-only
+  dataplane: nf-tables
+  auto_failover: false
+  mirror_rules_to_linux: false
+- name: eth0.10
+  alias: LAN
+  role: lan
+  interface_type: physical
+  description: LAN-H20
+  addresses:
+  - 192.168.10.1/24
+  stack: production
+  enabled: true
+  ipv4_mode: static
+  ipv6_mode: none
+  radvd_min_interval: 30
+  radvd_max_interval: 100
+  promiscuous: false
+  vlan:
+    vid: 10
+    protocol: dot1q
+    dei: false
+    native: false
+  parent: eth0
+  encap_tracking: inner-only
+  dataplane: nf-tables
+  auto_failover: false
+  mirror_rules_to_linux: false
+- name: eth0.20
+  alias: OPT1
+  role: none
+  interface_type: physical
+  description: LAN-OCEAN
+  addresses:
+  - 192.168.20.1/24
+  stack: production
+  enabled: true
+  ipv4_mode: static
+  ipv6_mode: none
+  radvd_min_interval: 30
+  radvd_max_interval: 100
+  promiscuous: false
+  vlan:
+    vid: 20
+    protocol: dot1q
+    dei: false
+    native: false
+  parent: eth0
+  encap_tracking: inner-only
+  dataplane: nf-tables
+  fallback_chain:
+  - ebpf-xdp
+  - nf-tables
+  auto_failover: true
+  mirror_rules_to_linux: false
+- name: eth0.30
+  alias: OPT2
+  role: none
+  interface_type: physical
+  description: LAN-DMZ
+  addresses: []
+  stack: production
+  enabled: true
+  ipv4_mode: static
+  ipv6_mode: none
+  radvd_min_interval: 30
+  radvd_max_interval: 100
+  promiscuous: false
+  vlan:
+    vid: 30
+    protocol: dot1q
+    dei: false
+    native: false
+  parent: eth0
+  encap_tracking: inner-only
+  dataplane: nf-tables
+  fallback_chain:
+  - ebpf-xdp
+  - nf-tables
+  auto_failover: true
+  mirror_rules_to_linux: false
+- name: wlan0
+  role: none
+  interface_type: physical
+  description: wifi-radio
+  capabilities:
+  - dhcp-server
+  addresses:
+  - 192.168.66.1/24
+  stack: production
+  enabled: true
+  ipv4_mode: static
+  ipv6_mode: none
+  radvd_min_interval: 30
+  radvd_max_interval: 100
+  promiscuous: false
+  encap_tracking: inner-only
+  dataplane: nf-tables
+  fallback_chain:
+  - ebpf-xdp
+  - nf-tables
+  auto_failover: true
+  mirror_rules_to_linux: false
+  wireless:
+    mode: access-point
+    ssid: skynetVfall
+    security: !wpa2-psk
+      passphrase: welcome2skynetpizza45
+    band: 2.4ghz
+    channel: 6
+    channel_width: 20
+    tx_power: 0
+    dfs: false
+    country: US
+    hidden: false
+    client_isolation: false
+    max_clients: 0
+    dtim_period: 2
+    beacon_interval: 100
+    roaming_80211k: false
+    roaming_80211v: false
+- name: wlan0.66
+  role: none
+  interface_type: physical
+  description: skynetVfall
+  addresses: []
+  stack: production
+  enabled: true
+  ipv4_mode: static
+  ipv6_mode: none
+  radvd_min_interval: 30
+  radvd_max_interval: 100
+  promiscuous: false
+  vlan:
+    vid: 66
+    protocol: dot1q
+    dei: false
+    native: false
+  parent: wlan0
+  encap_tracking: inner-only
+  dataplane: nf-tables
+  fallback_chain:
+  - ebpf-xdp
+  - nf-tables
+  auto_failover: true
+  mirror_rules_to_linux: false
+lldp:
+  enabled: false
+  tx_interval: 30
+  hold_multiplier: 4
+  reinit_delay: 2
+  interfaces: []
+ntp:
+  enabled: false
+  server_enabled: false
+  servers:
+  - address: pool.ntp.org
+    prefer: true
+  peers: []
+  timezone: UTC
+  stratum: 10
+  allow_networks: []
+  authentication: false
+  keys: []
+snmp:
+  enabled: false
+  version: '3'
+  listen_address: '::'
+  port: 161
+  communities: []
+  users: []
+  traps: []
+  acl: []
+srv6:
+  enabled: false
+  local_sids: []
+  policies: []
+  steering: []
+urpf:
+  enabled: false
+  log_violations: false
+  interfaces: []
+pppoe:
+  enabled: false
+  interfaces: []
+cellular:
+  enabled: false
+  modems: []
+  sms_alerts:
+    recipients: []
+    on_failover: false
+    on_data_warning: false
+    on_low_signal: false
+    on_security_event: false
+  sms_management:
+    enabled: false
+    authorized_numbers: []
+  airplane_mode: false
+hotspot:
+  connections: []
+sflow:
+  enabled: false
+  collectors: []
+  polling_interval: 20
+  sampling_rate: 1000
+  interfaces: []
+prometheus:
+  enabled: false
+  listen_address: '::'
+  port: 9100
+  path: /metrics
+  auth:
+    enabled: false
+  metrics:
+    interfaces: false
+    firewall: false
+    firewall_rules_detailed: false
+    nat: false
+    connections: false
+    app_id: false
+    system: false
+    flow_monitor: false
+  labels: {}
+radius:
+  enabled: false
+  servers: []
+  accounting_enabled: false
+  accounting_port: 1813
+  dead_time: 300
+policy_routing:
+  enabled: false
+  policies: []
+  interface_bindings: []
+dot1x:
+  enabled: false
+  system_auth_control: false
+  radius_servers: []
+  reauth_period: 3600
+  quiet_period: 60
+  tx_period: 30
+  supp_timeout: 30
+  max_reauth_req: 2
+  interfaces: []
+mlag:
+  enabled: false
+  domain_id: 1
+  heartbeat_interval: 1000
+  reload_delay: 300
+  dual_primary_detection:
+    enabled: false
+    action: errdisable
+  interfaces: []
+netboot:
+  enabled: false
+  interface: lan
+  boot_timeout_secs: 10
+  default_option: diskless
+  assets:
+    squashfs: ''
+    image: ''
+firewall:
+  rules:
+  - name: allow-established
+    action: pass
+    interface: eth0
+    protocol: any
+    enabled: true
+    source: any
+    destination: any
+    stack: production
+    state: established,related
+  - name: lan-to-any
+    action: pass
+    interface: eth0.10
+    protocol: any
+    enabled: true
+    source: 192.168.10.0/24
+    destination: any
+    stack: production
+  - name: lan-ssh
+    action: pass
+    interface: eth0.10
+    protocol: tcp
+    enabled: true
+    source: 192.168.10.0/24
+    destination: any
+    stack: production
+    destination_port: '22'
+  - name: lan-webui
+    action: pass
+    interface: eth0.10
+    protocol: tcp
+    enabled: true
+    source: 192.168.10.0/24
+    destination: any
+    stack: production
+    destination_port: '8080'
+  - name: allow-icmp
+    action: pass
+    interface: eth0
+    protocol: icmp
+    enabled: true
+    source: any
+    destination: any
+    stack: production
+  - name: wan-block-all
+    action: block
+    interface: eth0
+    protocol: any
+    enabled: true
+    source: any
+    destination: any
+    stack: production
+  - name: wifi66-to-any
+    action: pass
+    interface: wlan0
+    protocol: any
+    enabled: true
+    source: 192.168.66.0/24
+    destination: any
+    stack: production
+  - name: wifi66-vlan-to-any
+    action: pass
+    interface: wlan0.66
+    protocol: any
+    enabled: true
+    source: 192.168.66.0/24
+    destination: any
+    stack: production
+  separators: []
+  display_order: []
+  schedules: []
+nat:
+  outbound:
+  - name: lan-masquerade
+    interface: eth0
+    source: 192.168.10.0/24
+    translation: interface
+    description: Masquerade LAN traffic to WAN
+    enabled: true
+    stack: production
+    static_port: true
+  - name: wifi66-masquerade
+    interface: eth0
+    source: 192.168.66.0/24
+    translation: interface
+    description: Masquerade skynetVfall/VLAN66 to WAN
+    enabled: true
+    stack: production
+    static_port: true
+  outbound_mode: auto
+  inbound: []
+  binat: []
+  port_forward: []
+  static_mappings: []
+  pools: []
+  reflection: false
+  logging:
+    enabled: false
+    log_create: false
+    log_delete: false
+vpn:
+  ipsec_settings: {}
+  mesh_policy:
+    enabled: false
+    reconcile_interval_secs: 300
+    targets: []
+ha:
+  enabled: false
+  node_id: 0
+  health_checks: []
+dhcp:
+  enabled: true
+  pools:
+  - name: dhcp20
+    enabled: true
+    interface: eth0.20
+    network: 192.168.20.0/24
+    range_start: 192.168.20.20
+    range_end: 192.168.20.200
+    gateway: 192.168.20.1
+    dns_servers:
+    - 8.8.8.8
+    - 8.8.4.4
+    lease_time: 86400
+    static_only: false
+    bootp_dynamic: false
+    proxy_mode: false
+    stack: production
+  - name: dhcp66
+    enabled: true
+    interface: wlan0
+    network: 192.168.66.0/24
+    range_start: 192.168.66.20
+    range_end: 192.168.66.200
+    gateway: 192.168.66.1
+    dns_servers:
+    - 8.8.8.8
+    - 8.8.4.4
+    lease_time: 86400
+    static_only: false
+    bootp_dynamic: false
+    proxy_mode: false
+    stack: production
+  authoritative: false
+  rapid_commit: false
+  ignore_client_id: false
+  listen_port: 0
+  listen_interfaces: []
+  except_interfaces: []
+  local_service: false
+  domain: ''
+  expand_hosts: false
+  localise_queries: false
+  default_dns_servers: []
+  upstream_servers: []
+  upstream_mode: sequential
+  no_resolv: false
+  domain_needed: false
+  dns_forward_max: 0
+  edns_packet_max: 0
+  cache_size: 0
+  neg_cache: false
+  min_cache_ttl: 0
+  max_cache_ttl: 0
+  local_ttl: 0
+  use_stale_cache: 0
+  bogus_priv: false
+  rebind_protection: false
+  rebind_localhost_ok: false
+  rebind_domain_ok: []
+  dnssec: off
+  filter_aaaa: false
+  filter_a: false
+  no_hosts: false
+  read_ethers: false
+  addn_hosts: []
+  query_log: false
+  query_log_extra: false
+  host_overrides: []
+  domain_forwards: []
+  custom_options: ''
+  relays: []
+  stack: production
+dns:
+  enabled: false
+  backend: unbound
+  mode: recursive
+  listen_addresses: []
+  listen_interfaces: []
+  upstream_servers: []
+  cache_size: 0
+  enable_dnssec: false
+  serve_expired: false
+  serve_expired_client_timeout_ms: 0
+  serve_expired_ttl: 0
+  serve_expired_reply_ttl: 0
+  prefetch: false
+  prefetch_key: false
+  cache_min_ttl: 0
+  cache_max_ttl: 0
+  bind_ipv6: false
+  forward_tls_upstream: false
+  forward_tls_auth_name: ''
+  custom_options: ''
+  host_overrides: []
+  domain_forwards: []
+  stack: production
+bgp:
+  enabled: false
+  neighbors: []
+  networks: []
+  networks_v6: []
+  confederation_peers: []
+  graceful_restart: false
+  inject_to_vpp: false
+  stack: production
+plugins:
+  enabled: false
+  discovery_paths:
+  - /etc/nfsensei/plugins
+  - /usr/lib/nfsensei/plugins
+  loaded: []
+stacks:
+- name: production
+  stack_type: production
+  vrf_id: 0
+  isolated: false
+  description: Default production stack (auto-migrated)
+gateways: []
+gateway_groups: []
+load_balancer:
+  enabled: false
+  health_checks: []
+  pools: []
+  virtual_servers: []
+reverse_proxy:
+  enabled: false
+  sites: []
+policy:
+  route_maps: []
+  prefix_lists: []
+  community_lists: []
+  as_path_lists: []
+certificates:
+  certificates: []
+  ca_certificates: []
+  store_path: /etc/nfsensei/certs
+  acme_enabled: false
+  acme_directory: https://acme-v02.api.letsencrypt.org/directory
+  acme_accounts: []
+  acme_certs: []
+logging:
+  enabled: true
+  local:
+    level: warning
+    directory: /var/log/nfsensei
+    max_size_mb: 100
+    rotate_count: 7
+    compress: true
+  remote: []
+  retention_days: 30
+  format: rfc5424
+backup:
+  auto_backup: false
+  schedule: 0 2 * * *
+  retention: 30
+  directory: /var/backups/nfsensei
+  include_secrets: false
+  remote: []
+  backup_on_commit: false
+crash_loop:
+  enabled: true
+  max_failures: 3
+  cooldown_secs: 300
+  auto_fallback: true
+  log_events: true
+traffic_shaping:
+  queues: []
+  limiters: []
+flow_monitor:
+  enabled: true
+  deep_inspect: true
+  resolve_dns: false
+  connection_timeout: 60
+  storage:
+    db_path: /var/lib/nfsensei/flows.db
+    raw_retention: 86400
+    bucket_retention: 2592000
+    aggregation_window: 300
+geoip:
+  auto_download: true
+dhcpv6_server:
+  enabled: false
+  ra_enabled: false
+  stack: production
+pppoe_server:
+  enabled: false
+  gateway_address: ''
+  mtu: 0
+  ipv6_mode: allow
+  lcp_echo_interval: 0
+  lcp_echo_failure: 0

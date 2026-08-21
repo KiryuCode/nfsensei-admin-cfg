@@ -4,6 +4,10 @@ Lab notes for reaching and administering the **nfSensei** firewall from host **b
 
 Related host-side VLAN 10 work lives in [KiryuCode/nfsensei-vlans](https://github.com/KiryuCode/nfsensei-vlans).
 
+## Config backups
+
+Running-config YAML lives in [`backups/`](backups/). Latest: [`backups/nfsensei-running-2026-08-21.yaml`](backups/nfsensei-running-2026-08-21.yaml) (`config save --running` from the box). Restore notes in [`backups/README.md`](backups/README.md).
+
 ## Searchable CLI (web GUI)
 
 Open [`web/index.html`](web/index.html) in a browser, or serve it:
@@ -190,6 +194,8 @@ Too many failed password attempts can reset the SSH handshake (`kex_exchange_ide
 SSID **skynetVfall** is up on the firewall radio (`wlan0`, 2.4 GHz channel 6, WPA2-PSK). VLAN **66** is `wlan0.66`. Gateway **`192.168.66.1/24`** and DHCP pool **`dhcp66`** (`192.168.66.20–200`) listen on **`wlan0`** (SSID clients associate there, not on the 802.1Q child). Full CLI transcript: [`docs/wlan0.66-skynetVfall.md`](docs/wlan0.66-skynetVfall.md).
 
 Confirmed from this host (`wlp3s0`): BSSID `E4:5F:01:10:E2:54`, signal ~90–94. `dnsmasq` is serving udp/67. Global DHCP enable also started the existing `dhcp20` pool on `eth0.20`.
+
+Internet: `wifi66-to-any` (pass `192.168.66.0/24` on `wlan0` / `wlan0.66`) and `wifi66-masquerade` (SNAT out `eth0`). STA `192.168.66.183` has ESTABLISHED sessions NATed to `192.168.4.48`.
 
 ## Web UI
 

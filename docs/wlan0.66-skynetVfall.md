@@ -227,7 +227,37 @@ dhcp-option=tag:pool-1-dhcp66,6,8.8.8.8,8.8.4.4
 
 SSID still visible from bb8 after this: `skynetVfall` / `E4:5F:01:10:E2:54` / ch 6 / WPA2 / signal ~94.
 
-No firewall forward/NAT for `192.168.66.0/24` yet (same as VLAN 20). Clients should get a lease and reach `192.168.66.1`; internet via WAN is not granted.
+Internet via WAN is granted (see next section).
+
+## Internet from VLAN 66 / SSID
+
+DHCP worked; forward was **policy drop**. Client `192.168.66.183` (`abyss`, `00:45:e2:90:0c:49`) was hitting:
+
+```text
+nfsensei-drop-wlan0-forward: IN=wlan0 OUT=eth0 SRC=192.168.66.183 DST=8.8.8.8
+```
+
+NAT only masqueraded `192.168.10.0/24`. WAN itself is fine (`ping -I 192.168.4.48 1.1.1.1` ~3 ms). `ip_forward=1`.
+
+Added LAN-style pass + masquerade (SSID traffic is on **`wlan0`**; pass on `wlan0.66` is for a tagged client later):
+
+```text
+configure terminal
+firewall rule add wifi66-to-any pass wlan0 any 192.168.66.0/24 any
+firewall rule add wifi66-vlan-to-any pass wlan0.66 any 192.168.66.0/24 any
+nat outbound add wifi66-masquerade eth0 192.168.66.0/24 --description "Masquerade skynetVfall/VLAN66 to WAN"
+commit "allow and NAT 192.168.66.0/24 to WAN"
+write
+```
+
+Verified:
+
+- `ping -I 192.168.66.1 1.1.1.1` — 3/3, ~3 ms
+- `ping 192.168.66.183` — replies from the STA
+- nft `forward_wlan0`: `ip saddr 192.168.66.0/24 accept`
+- nft postrouting: `ip saddr 192.168.66.0/24 oifname "eth0" masquerade` (counters climbing)
+- conntrack: STA `192.168.66.183` → `8.8.8.8` ICMP echo replies NATed to `192.168.4.48`; ESTABLISHED tcp/443
+- no new `nfsensei-drop-wlan0-forward` after the commit
 
 ## Generated hostapd
 
@@ -245,10 +275,10 @@ No firewall forward/NAT for `192.168.66.0/24` yet (same as VLAN 20). Clients sho
 | `1397-1407-1fa6bdc8` | AP/SSID moved to `wlan0`; `wlan0.66` remains VLAN 66 |
 | `1820-1407-d27359ad` / `1823-1407-4dbe73cb` | `dhcp66` pool + `192.168.66.1/24` moved to `wlan0` |
 | `1875-1407-ee123d8e` / `1878-1407-5e05022c` | `dhcp.enabled: true` — dnsmasq started |
+| `2233-1407-afc865a4` / `2236-1407-81402d50` | `wifi66-to-any` + `wifi66-masquerade` — internet from 192.168.66.0/24 |
 
 ## Left undone
 
-- Firewall / NAT for `192.168.66.0/24` (clients will not reach the internet yet)
 - `eth0.66` trunk on the wired NIC
 - Bridging AP STA traffic into VLAN 66 (clients on the SSID are on `wlan0`, not on the 802.1Q child)
 
